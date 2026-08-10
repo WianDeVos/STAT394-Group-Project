@@ -25,4 +25,6 @@ You can add options to executable code like this
 
 test
 
+test 2
+
 The `echo: false` option disables the printing of code (only output is displayed).
