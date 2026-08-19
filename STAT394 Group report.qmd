@@ -1,30 +1,53 @@
 ---
 title: "Group report"
-format: typst
+format:
+  typst:
+    number-sections: true
 editor: visual
+bibliography: references.bib
 ---
 
-## Quarto
+## Introduction {#sec-introduction}
 
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+The phenolic composition of red wine particularly its anthocyanin and tannin content governs colour, astringency, bitterness and ageing potential, and it is shaped jointly by grape cultivar, growing conditions and winemaking practice. Because anthocyanin composition is under strong genetic control, the relative proportions of individual anthocyanins (the "anthocyanin fingerprint") have been proposed as an analytical tool for verifying the grape cultivar used to produce a wine, complementing more general spectrophotometric measures of colour and phenolic content.
 
-## Running Code
+@revilla2016 studied this question for wines from the Appellation d'Origine Contrôlée (AOC) Valdeorras region (Galicia, NW Spain), comparing single-cultivar young red wines made from Mencía the principal red cultivar of the region and Alicante Bouschet, a teinturier cultivar with red-pigmented flesh that is often blended with Mencía to boost colour. Thirty wines from the 2014 vintage (20 Mencía, 10 Alicante Bouschet) were analysed after malolactic fermentation using two complementary techniques: UV-Vis spectrophotometry, to quantify total phenols, colour intensity, hue, chemical age and tannin- and anthocyanin-related indices; and HPLC-DAD, to determine the relative proportions of 14 individual anthocyanins (5 monoglucosides and 9 acylated derivatives). The authors used principal component analysis and linear discriminant analysis on each variable block separately and found that both effectively separated the two cultivars.
 
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+For this project we combine the quantitative data reported in Tables 1, 2, 5 and 6 of @revilla2016 into a single data frame of 30 wines and 18 numeric variables (5 spectrophotometric/colour variables, 4 anthocyanin/tannin concentration variables, and 9 relative-proportion anthocyanin variables), together with the grape cultivar (Mencía or Alicante Bouschet) as a grouping variable. Unlike the original paper, which analysed the spectrophotometric and HPLC variable blocks separately, we treat all 18 variables jointly, which lets us ask whether the wines separate as cleanly on the full phenolic profile as they did on either block alone.
 
-```{r}
-1 + 1
-```
+Our aims are to describe this dataset quantitatively and graphically, assess whether a multivariate Gaussian model is a reasonable approximation for the joint distribution of these variables, identify any atypical wines, and determine whether unsupervised grouping of the samples recovers the Mencía/Alicante Bouschet distinction and, if not, to discuss why.
 
-You can add options to executable code like this
+The remainder of the report is organised as follows. @sec-methodology describes how the data frame was assembled and the statistical methods used. @sec-results presents the descriptive, graphical and multivariate analyses. @sec-discussion interprets the findings in light of @revilla2016's own results and discusses their implications.
 
-```{r}
-#| echo: false
-2 * 2
-```
+## Methodology {#sec-methodology}
 
-test
+### Data assembly
 
-test 2
 
-The `echo: false` option disables the printing of code (only output is displayed).
+
+### Statistical methods
+
+
+
+## Results {#sec-results}
+
+### Descriptive analysis {#sec-descriptive}
+
+
+
+### Graphical analysis {#sec-graphical}
+
+
+
+### Assessing multivariate normality {#sec-normality}
+
+
+### Atypical observations {#sec-outliers}
+
+
+### Grouping structure {#sec-clustering}
+
+
+
+## Discussion {#sec-discussion}
+
