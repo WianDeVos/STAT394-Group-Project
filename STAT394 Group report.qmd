@@ -3,8 +3,12 @@ title: "Group report"
 format:
   typst:
     number-sections: true
+    fig-format: png
 editor: visual
 bibliography: references.bib
+execute:
+  warning: false
+  message: false
 ---
 
 ## Introduction {#sec-introduction}
@@ -22,6 +26,26 @@ The remainder of the report is organised as follows. @sec-methodology describes 
 ## Methodology {#sec-methodology}
 
 ### Data assembly
+
+We combined the quantitative data reported in Tables 1, 2, 5 and 6 of @revilla2016 into a single data frame, using the sample labelling from the original tables (`M` = Mencía, `T` = Alicante Bouschet) to derive a `Cultivar` grouping variable.
+
+```{r}
+#| label: read-data
+#| echo: true
+library(tidyverse)
+
+wine <- read_csv("extracted data.csv") |>
+  select(-`...1`) |>
+  mutate(
+    Cultivar = factor(if_else(str_starts(Sample, "M"), "Mencia", "Alicante Bouschet")),
+    .after = Sample
+  )
+```
+
+The resulting data frame contains 30 wines (20 Mencía, 10 Alicante Bouschet) and 23 numeric phenolic variables: 5 spectrophotometric/colour variables (`Tot_Phen_Ind`, `Col_Int_420_520`, `Col_Int_420_520_620`, `Hue`, `Chem_Age_Ind`) and 4 anthocyanin/tannin concentration variables (`Tot_Anthocyans`, `Tot_Anthocyanins`, `Col_Anthocyanins`, `Tot_Tannins`) from Tables 1 and 2, and 14 relative-proportion anthocyanin variables — 5 monoglucosides and 9 acylated derivatives (`DpGl` through `MvGlCf`) — from Tables 5 and 6.
+
+
+
 
 
 
