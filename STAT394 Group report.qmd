@@ -44,34 +44,37 @@ wine <- read_csv("extracted data.csv") |>
 
 The resulting data frame contains 30 wines (20 Mencía, 10 Alicante Bouschet) and 23 numeric phenolic variables: 5 spectrophotometric/colour variables (`Tot_Phen_Ind`, `Col_Int_420_520`, `Col_Int_420_520_620`, `Hue`, `Chem_Age_Ind`) and 4 anthocyanin/tannin concentration variables (`Tot_Anthocyans`, `Tot_Anthocyanins`, `Col_Anthocyanins`, `Tot_Tannins`) from Tables 1 and 2, and 14 relative-proportion anthocyanin variables — 5 monoglucosides and 9 acylated derivatives (`DpGl` through `MvGlCf`) — from Tables 5 and 6.
 
-
-
-
-
-
 ### Statistical methods
-
-
 
 ## Results {#sec-results}
 
 ### Descriptive analysis {#sec-descriptive}
 
-
-
 ### Graphical analysis {#sec-graphical}
-
-
 
 ### Assessing multivariate normality {#sec-normality}
 
+PLAN: 
+MVN means Univariate normality per variable (testing each variables normality)
+since we only have 30 observations (n < 50) Ill use shapiro-wilk for normality
+
+```{r}
+head(wine)
+nrow(wine)
+
+library(rstatix) # for formatting the tests for many variables
+
+results <- wine %>%
+  shapiro_test(Tot_Phen_Ind, Col_Int_420_520, Col_Int_420_520_620, Hue, Chem_Age_Ind, Tot_Anthocyans, Tot_Anthocyanins, Col_Anthocyanins, Tot_Tannins, DpGl, CyGl, PtGl, PnGl, MvGl, DpGlAc, PtGlAc, PnGlAc, MvGlAc, DpGlCm, PtGlCm, PnGlCm)
+
+results$p <- format(round(results$p, 5), scientific = FALSE)
+results
+```
+
+formal multivariate check with mahalanobis
 
 ### Atypical observations {#sec-outliers}
 
-
 ### Grouping structure {#sec-clustering}
 
-
-
 ## Discussion {#sec-discussion}
-
