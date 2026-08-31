@@ -54,9 +54,7 @@ The resulting data frame contains 30 wines (20 Mencía, 10 Alicante Bouschet) an
 
 ### Assessing multivariate normality {#sec-normality}
 
-PLAN: 
-MVN means Univariate normality per variable (testing each variables normality)
-since we only have 30 observations (n < 50) Ill use shapiro-wilk for normality
+PLAN: MVN means Univariate normality per variable (testing each variables normality) since we only have 30 observations (n \< 50) Ill use shapiro-wilk for normality
 
 ```{r}
 head(wine)
@@ -74,6 +72,41 @@ results
 formal multivariate check with mahalanobis
 
 ### Atypical observations {#sec-outliers}
+
+The atypicality of a datapoint relative to a group distribution is measured by the Mahalanobis distance. For this dataset, atypicality will be assessed based on distance from the distribution of the cultivar samples, not from the overall dataset. Unfortunately, the number of variables measured, 23, exceeds the sample size of either cultivar, resulting in a singular, non-invertible covariance matrix, making the calculation of the Mahalanobis distance impossible. As such, we will use Principal Component Analysis and remove the non-
+
+```{r}
+wineData = as.data.frame(wine)
+menciaData = wineData[wineData$Cultivar=="Mencia",c(-1,-2)]
+alicanteData = wineData[wineData$Cultivar=="Alicante Bouschet",c(-1,-2)]
+
+muHatMencia = colMeans(menciaData) 
+sigmaHatMencia = cov(menciaData)
+mahalanobisMencia = mahalanobis(menciaData, center=muHatMencia, cov=sigmaHatMencia)
+det(sigmaHatMencia)
+pchisq(mahalanobisMencia, df=23, lower.tail = FALSE)
+
+menciaPCA = as.matrix(menciaData) %*% eigen(sigmaHatMencia)$vectors
+menciaPCAnonredundant = menciaPCA[,1:2]
+sigmaHatMenciaPCAnonredundant = cov(menciaPCAnonredundant)
+muHatMenciaPCAnonredundant = apply(menciaPCAnonredundant,MARGIN=2,FUN = mean)
+dMmenciaPCAnonredundant = mahalanobis(menciaPCAnonredundant,center = muHatMenciaPCAnonredundant,cov = sigmaHatMenciaPCAnonredundant)
+
+
+
+muHatAlicante = colMeans(alicanteData)
+sigmaHatAlicante = cov(alicanteData)
+mahalanobisAlicante = mahalanobis(alicanteData, center=muHatAlicante, cov=sigmaHatAlicante)
+PCAAlicante = prcomp(alicanteData, center=TRUE, scale=TRUE)
+plot(PCAAlicante)
+alicantePCA = as.matrix(alicanteData) %*% eigen(sigmaHatAlicante)$vectors
+alicantePCAnonredundant = alicantePCA[,1:3]
+sigmaHatAlicantePCAnonredundant = cov(alicantePCAnonredundant)
+muHatAlicantePCAnonredundant = apply(alicantePCAnonredundant,MARGIN=2,FUN = mean)
+dMalicantePCAnonredundant = mahalanobis(alicantePCAnonredundant,center = muHatAlicantePCAnonredundant,cov = sigmaHatAlicantePCAnonredundant)
+
+# note: covariance matrix is not full rank: sample size too small. rank of covariance matrix cannot exceed n-1.
+```
 
 ### Grouping structure {#sec-clustering}
 
