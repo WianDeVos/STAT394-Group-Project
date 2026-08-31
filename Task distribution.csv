@@ -1,10 +1,10 @@
-Task,Group member,completed,hours
-Data extraction,Riley ,yes,3
-Github creation/management,Wian,,
-meeting co-ordination,Riley,,
-high-level description,Wian,,
-descriptive analysis,Wian,,
-graphical analysis,Simon,,
-multivariate normal distribution confirmation,Oliver,,
-surprising observations,Oliver,,
-grouping of samples,,,
+Task,Group.member,completed
+Data extraction,Riley ,yes
+Github creation/management,Wian,
+meeting co-ordination,Riley,
+high-level description,Wian,
+descriptive analysis,Wian,
+graphical analysis,Simon,
+multivariate normal distribution confirmation,Oliver,
+surprising observations,Riley,
+grouping of samples,,
