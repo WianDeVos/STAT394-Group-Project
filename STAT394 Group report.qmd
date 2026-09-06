@@ -77,6 +77,17 @@ The atypicality of a datapoint relative to a group distribution is measured by t
 
 ```{r}
 wineData = as.data.frame(wine)
+wineDataVariables = wineData[,-c(1,2)]
+wineData$mahalanobis = mahalanobis(wineDataVariables,center = colMeans(wineDataVariables),cov = cov(wineDataVariables))
+wineData$mahalanobis
+wineData$surprise = pchisq(wineData$mahalanobis,df=23,lower.tail = FALSE)
+  
+  #ifelse(pchisq(wineData$mahalanobis,df=23,lower.tail = FALSE) <= 0.1, "Slightly surprising", wineData$mahalanobis)
+wineData
+
+
+
+
 menciaData = wineData[wineData$Cultivar=="Mencia",c(-1,-2)]
 alicanteData = wineData[wineData$Cultivar=="Alicante Bouschet",c(-1,-2)]
 
