@@ -81,7 +81,16 @@ wineDataVariables = wineData[,-c(1,2)]
 wineData$mahalanobis = mahalanobis(wineDataVariables,center = colMeans(wineDataVariables),cov = cov(wineDataVariables))
 wineData$mahalanobis
 wineData$surprise = pchisq(wineData$mahalanobis,df=23,lower.tail = FALSE)
-  
+
+wineDataPCA = as.matrix(wineDataVariables) %*% as.matrix(prcomp(wineDataVariables, center = TRUE, scale = TRUE)$rotation)
+
+wineDataPCADF = as.data.frame(wineDataPCA)
+apply(wineDataPCADF,2,shapiro.test)
+
+PCAMahalanobis = mahalanobis(wineDataPCADF,center = colMeans(wineDataPCADF),cov = cov(wineDataPCADF))
+PCAMahalanobis
+wineData$surprise = pchisq(wineData$mahalanobis,df=23,lower.tail = FALSE)
+
   #ifelse(pchisq(wineData$mahalanobis,df=23,lower.tail = FALSE) <= 0.1, "Slightly surprising", wineData$mahalanobis)
 wineData
 
