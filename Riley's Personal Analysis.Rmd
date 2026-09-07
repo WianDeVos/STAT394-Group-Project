@@ -1,0 +1,12 @@
+---
+title: "Riley's Personal Analysis"
+output: html_document
+---
+
+Quantitative Descriptive Analysis
+
+```{r}
+wineData = read.csv("extracted data.csv", header=TRUE)
+summary(wineData)
+```
+
