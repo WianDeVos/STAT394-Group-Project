@@ -9,4 +9,41 @@ Quantitative Descriptive Analysis
 wineData = read.csv("extracted data.csv", header=TRUE)
 summary(wineData)
 ```
+```{r}
+library(reshape2)
+library(ggplot2)
+wineData$Cultivar = c(rep("Mencia",20),rep("Alicante Bouschet",10))
+wineMelt = melt(wineData[,-c(1,2)],
+                id.vars = "Cultivar",
+                variable.name = "Measure")
+ggplot(data=wineMelt, aes(x=Measure, y=value)) +
+  geom_boxplot(aes(col=Measure), notch = FALSE) +
+  scale_y_log10() +
+  facet_grid(~Cultivar) +
+  ylab("Values")
+```
+
+```{r}
+apply(wineData[1:20,3:25],2,shapiro.test)
+```
+
+First try PCA on whole dataset, look for cultivar separation.
+
+```{r}
+wineDataVariables = wineData[,3:25]
+
+
+wineDataPCA = as.matrix(wineDataVariables) %*% as.matrix(prcomp(wineDataVariables, center = TRUE, scale = TRUE)$rotation)
+
+summary(prcomp(wineDataVariables, center = TRUE, scale = TRUE))
+# first 5 PCs have stdev>1, drop rest
+wineDataPCA = wineDataPCA[,1:5]
+summary(wineDataPCA)
+wineDataPCADF = as.data.frame(wineDataPCA)
+apply(wineDataPCADF[21:30,],2,shapiro.test)
+
+PCAMahalanobis = mahalanobis(wineDataPCADF,center = colMeans(wineDataPCADF),cov = cov(wineDataPCADF))
+PCAMahalanobis
+wineData$surprise = pchisq(wineData$mahalanobis,df=23,lower.tail = FALSE)
+```
 
