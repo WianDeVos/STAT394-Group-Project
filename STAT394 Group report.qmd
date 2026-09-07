@@ -46,11 +46,57 @@ The resulting data frame contains 30 wines (20 Mencía, 10 Alicante Bouschet) an
 
 ### Statistical methods
 
+This Report makes use of Principle Component Analysis to .... We also make use of the Shapiro-Wilk test of Normality to judge whether are variables are normally distributed on a univariate level. 
+
 ## Results {#sec-results}
 
 ### Descriptive analysis {#sec-descriptive}
 
+1. Sample and variable overview --> mayb 1 short paragraph
+
+```{r Sample and Variable Overview}
+#| label: sample-variable-overview
+#| echo: FALSE
+#| include: TRUE
+
+n_total <- nrow(wine)
+n_mencia <- sum(wine$Cultivar == "Mencia")
+n_alicante <- sum(wine$Cultivar == "Alicante Bouschet")
+
+# Hard coding shorter variables lists.
+spectro_vars <- c("Tot_Phen_Ind", "Col_Int_420_520", "Col_Int_420_520_620", "Hue", "Chem_Age_Ind")
+conc_vars <- c("Tot_Anthocyans", "Tot_Anthocyanins", "Col_Anthocyanins", "Tot_Tannins")
+anthocyanin_vars <- setdiff(names(wine), c("Sample", "Cultivar", spectro_vars, conc_vars))
+
+n_spectro <- length(spectro_vars)
+n_conc <- length(conc_vars)
+n_antho <- length(anthocyanin_vars)
+n_numeric <- n_spectro + n_conc + n_antho
+
+n_total; n_mencia; n_alicante; n_numeric
+```
+
+The Wine Data Set is comprised of 30 total wines, 20 Mencía and 10 Alicante Bouschet. This affirms Alicante Bouschets role as a minor blendings cultivar in the wine valdeorras region. Each wine is described by 23 numeric phenolic variables across 3 blocks spectrophotometric/colour variables, anthocyanin/tannin concentration variables and relative-proportion anthocyanin variables. Alicante Bouschet wine's mean per-cultivar covariance estimates in later sections are inherently unstable because of this; a limitation we return to in @sec-outliers
+
+2. Uni variate Summary Statistics Table --> for each 23 variables split by cultivar
+
+```{r Summary Stats}
+
+```
+
+3. Between group comparison --> mayb talk about largest apparent differences between cultivars or the ones flagged by Revilla as being the most discriminating. 
+
+4. Comment briefly on missingness which we dont have
+
+5. Comment on the different scales. 
+
 ### Graphical analysis {#sec-graphical}
+
+Univariate distributions by cultivar
+
+histograms / density plots with normal overlay 
+
+correlation heat map --> can help show why we need PCA.
 
 ### Assessing multivariate normality {#sec-normality}
 
