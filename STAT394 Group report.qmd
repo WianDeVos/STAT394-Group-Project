@@ -9,6 +9,7 @@ bibliography: references.bib
 execute:
   warning: false
   message: false
+  echo: false
 ---
 
 ## Introduction {#sec-introduction}
@@ -17,7 +18,7 @@ The phenolic composition of red wine particularly its anthocyanin and tannin con
 
 @revilla2016 studied this question for wines from the Appellation d'Origine Contrôlée (AOC) Valdeorras region (Galicia, NW Spain), comparing single-cultivar young red wines made from Mencía the principal red cultivar of the region and Alicante Bouschet, a teinturier cultivar with red-pigmented flesh that is often blended with Mencía to boost colour. Thirty wines from the 2014 vintage (20 Mencía, 10 Alicante Bouschet) were analysed after malolactic fermentation using two complementary techniques: UV-Vis spectrophotometry, to quantify total phenols, colour intensity, hue, chemical age and tannin- and anthocyanin-related indices; and HPLC-DAD, to determine the relative proportions of 14 individual anthocyanins (5 monoglucosides and 9 acylated derivatives). The authors used principal component analysis and linear discriminant analysis on each variable block separately and found that both effectively separated the two cultivars.
 
-For this project we combine the quantitative data reported in Tables 1, 2, 5 and 6 of @revilla2016 into a single data frame of 30 wines and 18 numeric variables (5 spectrophotometric/colour variables, 4 anthocyanin/tannin concentration variables, and 9 relative-proportion anthocyanin variables), together with the grape cultivar (Mencía or Alicante Bouschet) as a grouping variable. Unlike the original paper, which analysed the spectrophotometric and HPLC variable blocks separately, we treat all 18 variables jointly, which lets us ask whether the wines separate as cleanly on the full phenolic profile as they did on either block alone.
+For this project we combine the quantitative data reported in Tables 1, 2, 5 and 6 of @revilla2016 into a single data frame of 30 wines and 23 numeric variables (5 spectrophotometric/colour variables, 4 anthocyanin/tannin concentration variables, and 14 relative-proportion anthocyanin variables), together with the grape cultivar (Mencía or Alicante Bouschet) as a grouping variable. Unlike the original paper, which analysed the spectrophotometric and HPLC variable blocks separately, we treat all 23 variables jointly, which lets us ask whether the wines separate as cleanly on the full phenolic profile as they did on either block alone.
 
 Our aims are to describe this dataset quantitatively and graphically, assess whether a multivariate Gaussian model is a reasonable approximation for the joint distribution of these variables, identify any atypical wines, and determine whether unsupervised grouping of the samples recovers the Mencía/Alicante Bouschet distinction and, if not, to discuss why.
 
@@ -52,46 +53,101 @@ This Report makes use of Principle Component Analysis to .... We also make use o
 
 ### Descriptive analysis {#sec-descriptive}
 
-1. Sample and variable overview --> mayb 1 short paragraph
+```{r}
+#| label: tbl-summary-colour
+#| tbl-cap: "Mean, standard deviation, and range of the spectrophotometric and colour variables by grape cultivar."
 
-```{r Sample and Variable Overview}
-#| label: sample-variable-overview
-#| echo: FALSE
-#| include: TRUE
-
-n_total <- nrow(wine)
-n_mencia <- sum(wine$Cultivar == "Mencia")
-n_alicante <- sum(wine$Cultivar == "Alicante Bouschet")
-
-# Hard coding shorter variables lists.
-spectro_vars <- c("Tot_Phen_Ind", "Col_Int_420_520", "Col_Int_420_520_620", "Hue", "Chem_Age_Ind")
-conc_vars <- c("Tot_Anthocyans", "Tot_Anthocyanins", "Col_Anthocyanins", "Tot_Tannins")
-anthocyanin_vars <- setdiff(names(wine), c("Sample", "Cultivar", spectro_vars, conc_vars))
-
-n_spectro <- length(spectro_vars)
-n_conc <- length(conc_vars)
-n_antho <- length(anthocyanin_vars)
-n_numeric <- n_spectro + n_conc + n_antho
-
-n_total; n_mencia; n_alicante; n_numeric
+wine |>
+  select(Cultivar, Tot_Phen_Ind, Col_Int_420_520, Col_Int_420_520_620, Hue, Chem_Age_Ind) |>
+  pivot_longer(-Cultivar, names_to = "Variable", values_to = "value") |>
+  summarise(
+    Mean = mean(value), SD = sd(value), Min = min(value), Max = max(value),
+    .by = c(Cultivar, Variable)
+  ) |>
+  arrange(Variable, Cultivar) |>
+  mutate(across(where(is.numeric), \(x) round(x, 2))) |>
+  knitr::kable()
 ```
 
-The Wine Data Set is comprised of 30 total wines, 20 Mencía and 10 Alicante Bouschet. This affirms Alicante Bouschets role as a minor blendings cultivar in the wine valdeorras region. Each wine is described by 23 numeric phenolic variables across 3 blocks spectrophotometric/colour variables, anthocyanin/tannin concentration variables and relative-proportion anthocyanin variables. Alicante Bouschet wine's mean per-cultivar covariance estimates in later sections are inherently unstable because of this; a limitation we return to in @sec-outliers
+The two cultivars differ sharply on pigment-related colour measures. Alicante Bouschet wines have roughly twice the colour intensity of Mencía wines on both scales (means of 19.07 versus 8.47, and 21.44 versus 10.60) and close to twice the total phenol index (65.55 versus 36.25), consistent with the teinturier character of the cultivar: because the berry flesh is pigmented as well as the skin, pressing yields an already-coloured must. The two maturation indices behave differently. Chemical age is statistically indistinguishable between the groups (0.10 versus 0.09) and hue is only slightly lower in Alicante Bouschet, with Mencía spanning a considerably wider range (0.43–0.69 against 0.49–0.60). The cultivar difference is therefore one of pigment quantity rather than of maturation state. It is worth noting that despite the large mean separations, none of these variables separates the cultivars completely: the most deeply coloured Mencía wines exceed the palest Alicante Bouschet wines on every measure.
 
-2. Uni variate Summary Statistics Table --> for each 23 variables split by cultivar
+```{r}
+#| label: tbl-summary-concentration
+#| tbl-cap: "Mean, standard deviation, and range of the anthocyanin and tannin concentration variables (mg/L) by grape cultivar."
 
-```{r Summary Stats}
-
+wine |>
+  select(Cultivar, Tot_Anthocyans, Tot_Anthocyanins, Col_Anthocyanins, Tot_Tannins) |>
+  pivot_longer(-Cultivar, names_to = "Variable", values_to = "value") |>
+  summarise(
+    Mean = mean(value), SD = sd(value), Min = min(value), Max = max(value),
+    .by = c(Cultivar, Variable)
+  ) |>
+  arrange(Variable, Cultivar) |>
+  mutate(across(where(is.numeric), \(x) round(x, 2))) |>
+  knitr::kable()
 ```
 
-3. Between group comparison --> mayb talk about largest apparent differences between cultivars or the ones flagged by Revilla as being the most discriminating. 
+The concentration measures reinforce this pattern, with Alicante Bouschet wines containing roughly two to three times the total anthocyans, total anthocyanins, coloured anthocyanins and total tannins of Mencía wines. Two features stand out. First, the Alicante Bouschet group is markedly more heterogeneous, with standard deviations two to three times those of the Mencía group on every variable; @revilla2016 attribute this to deliberate variation in maceration length, since these wines are commonly produced for blending and are managed to different phenolic targets. Second, the ranges overlap substantially in every case — most strikingly for total anthocyans, where the Mencía maximum of 892 mg/L exceeds the Alicante Bouschet minimum of 438 mg/L. This overlap is driven by two unusual Mencía wines, M16 and M17, which combine high anthocyanin content with the lowest tannin levels in the dataset; these observations recur in the analysis of atypical wines in @sec-outliers.
 
-4. Comment briefly on missingness which we dont have
+```{r}
+#| label: tbl-summary-monoglucosides
+#| tbl-cap: "Mean, standard deviation, and range of the relative content (%) of anthocyanidin monoglucosides by grape cultivar."
 
-5. Comment on the different scales. 
+wine |>
+  select(Cultivar, DpGl, CyGl, PtGl, PnGl, MvGl) |>
+  pivot_longer(-Cultivar, names_to = "Variable", values_to = "value") |>
+  summarise(
+    Mean = mean(value), SD = sd(value), Min = min(value), Max = max(value),
+    .by = c(Cultivar, Variable)
+  ) |>
+  arrange(Variable, Cultivar) |>
+  mutate(across(where(is.numeric), \(x) round(x, 2))) |>
+  knitr::kable()
+```
+
+The relative proportions of the anthocyanidin monoglucosides provide the cleanest cultivar distinction in the dataset. Malvidin-3-O-glucoside dominates in both groups but accounts for a substantially higher share in Mencía wines (59.17% against 47.08%), and the difference is driven by peonidin-3-O-glucoside, present at more than three times the relative level in Alicante Bouschet (26.28% against 8.10%). Its biosynthetic precursor cyanidin-3-O-glucoside follows the same pattern at lower absolute levels. Unlike any of the variables considered so far, the ranges of these three compounds do not overlap between cultivars at all, making them the most discriminating single measurements available. Delphinidin-3-O-glucoside is the exception: its group means are essentially identical (4.44% and 4.50%), so it carries no cultivar information despite belonging to the same compound class.
+
+```{r}
+#| label: tbl-summary-acylated
+#| tbl-cap: "Mean, standard deviation, and range of the relative content (%) of acylated anthocyanins by grape cultivar."
+
+wine |>
+  select(Cultivar, DpGlAc, PtGlAc, PnGlAc, MvGlAc, DpGlCm, PtGlCm, PnGlCm, MvGlCm, MvGlCf) |>
+  pivot_longer(-Cultivar, names_to = "Variable", values_to = "value") |>
+  summarise(
+    Mean = mean(value), SD = sd(value), Min = min(value), Max = max(value),
+    .by = c(Cultivar, Variable)
+  ) |>
+  arrange(Variable, Cultivar) |>
+  mutate(across(where(is.numeric), \(x) round(x, 2))) |>
+  knitr::kable()
+```
+
+Acylation distinguishes the cultivars through its pattern rather than its extent. All four acetylated derivatives are more abundant in Mencía wines, with the acetyl derivative of malvidin-3-O-glucoside showing the largest gap (8.74% against 3.36%) and, together with the acetyl derivative of petunidin, forming a further pair of non-overlapping ranges. The coumaroylated derivatives trend in the opposite direction, though less consistently: the delphinidin and peonidin forms are clearly higher in Alicante Bouschet, while the malvidin and petunidin forms differ little between groups. The caffeoyl derivative of malvidin shows no cultivar difference. This reversal in acylation preference, rather than any difference in total acylation, is what carries the varietal signal.
 
 ### Graphical analysis {#sec-graphical}
 
+```{r}
+#| label: fig-correlation-heatmap
+#| fig-cap: "Pairwise Pearson correlations among the 23 phenolic variables."
+#| fig-width: 9
+#| fig-height: 8
+
+library(ggcorrplot)
+
+wine |>
+  select(-Sample, -Cultivar) |>
+  cor() |>
+  ggcorrplot(
+    type = "lower",
+    method = "circle",
+    lab = TRUE,
+    lab_size = 2,
+    hc.order = TRUE,
+    colors = c("blue", "white", "red"),
+    legend.title = "Corr"
+  )
+```
 Univariate distributions by cultivar
 
 histograms / density plots with normal overlay 
@@ -103,16 +159,26 @@ correlation heat map --> can help show why we need PCA.
 PLAN: MVN means Univariate normality per variable (testing each variables normality) since we only have 30 observations (n \< 50) Ill use shapiro-wilk for normality
 
 ```{r}
-head(wine)
-nrow(wine)
+#| label: tbl-shapiro-univariate
+#| tbl-cap: "Shapiro-Wilk tests of univariate normality for each phenolic variable."
 
-library(rstatix) # for formatting the tests for many variables
+library(rstatix)
 
-results <- wine %>%
-  shapiro_test(Tot_Phen_Ind, Col_Int_420_520, Col_Int_420_520_620, Hue, Chem_Age_Ind, Tot_Anthocyans, Tot_Anthocyanins, Col_Anthocyanins, Tot_Tannins, DpGl, CyGl, PtGl, PnGl, MvGl, DpGlAc, PtGlAc, PnGlAc, MvGlAc, DpGlCm, PtGlCm, PnGlCm)
-
-results$p <- format(round(results$p, 5), scientific = FALSE)
-results
+wine |>
+  shapiro_test(
+    Tot_Phen_Ind, Col_Int_420_520, Col_Int_420_520_620, Hue, Chem_Age_Ind,
+    Tot_Anthocyans, Tot_Anthocyanins, Col_Anthocyanins, Tot_Tannins,
+    DpGl, CyGl, PtGl, PnGl, MvGl,
+    DpGlAc, PtGlAc, PnGlAc, MvGlAc,
+    DpGlCm, PtGlCm, PnGlCm
+  ) |>
+  mutate(
+    statistic = round(statistic, 3),
+    p = round(p, 5)
+  ) |>
+  rename(Variable = variable, W = statistic, `p-value` = p) |>
+  arrange(`p-value`) |>
+  knitr::kable()
 ```
 
 formal multivariate check with mahalanobis
@@ -121,57 +187,120 @@ formal multivariate check with mahalanobis
 
 The atypicality of a datapoint relative to a group distribution is measured by the Mahalanobis distance. For this dataset, atypicality will be assessed based on distance from the distribution of the cultivar samples, not from the overall dataset. Unfortunately, the number of variables measured, 23, exceeds the sample size of either cultivar, resulting in a singular, non-invertible covariance matrix, making the calculation of the Mahalanobis distance impossible. As such, we will use Principal Component Analysis and remove the non-
 
+
 ```{r}
-wineData = as.data.frame(wine)
-wineDataVariables = wineData[,-c(1,2)]
-wineData$mahalanobis = mahalanobis(wineDataVariables,center = colMeans(wineDataVariables),cov = cov(wineDataVariables))
-wineData$mahalanobis
-wineData$surprise = pchisq(wineData$mahalanobis,df=23,lower.tail = FALSE)
+#| label: tbl-mahalanobis-pooled
+#| tbl-cap: "Mahalanobis distances and associated tail probabilities for all 30 wines, computed on the full set of 23 phenolic variables."
 
-wineDataPCA = as.matrix(wineDataVariables) %*% as.matrix(prcomp(wineDataVariables, center = TRUE, scale = TRUE)$rotation)
+wineData <- as.data.frame(wine)
+wineDataVariables <- wineData[, 3:25]
 
-wineDataPCADF = as.data.frame(wineDataPCA)
-apply(wineDataPCADF,2,shapiro.test)
+wineData$mahalanobis <- mahalanobis(
+  wineDataVariables,
+  center = colMeans(wineDataVariables),
+  cov = cov(wineDataVariables)
+)
+wineData$surprise <- pchisq(wineData$mahalanobis, df = 23, lower.tail = FALSE)
 
-PCAMahalanobis = mahalanobis(wineDataPCADF,center = colMeans(wineDataPCADF),cov = cov(wineDataPCADF))
-PCAMahalanobis
-wineData$surprise = pchisq(wineData$mahalanobis,df=23,lower.tail = FALSE)
+wineData |>
+  select(Sample, Cultivar, mahalanobis, surprise) |>
+  mutate(
+    mahalanobis = round(mahalanobis, 2),
+    surprise = round(surprise, 4)
+  ) |>
+  rename(Wine = Sample, `Mahalanobis distance` = mahalanobis, `Tail probability` = surprise) |>
+  arrange(desc(`Mahalanobis distance`)) |>
+  knitr::kable()
+```
 
-  #ifelse(pchisq(wineData$mahalanobis,df=23,lower.tail = FALSE) <= 0.1, "Slightly surprising", wineData$mahalanobis)
-wineData
+```{r}
+#| label: tbl-shapiro-pca
+#| tbl-cap: "Shapiro-Wilk tests of normality applied to each principal component."
+
+winePCA <- prcomp(wineDataVariables, center = TRUE, scale = TRUE)
+wineDataPCADF <- as.data.frame(winePCA$x)
+
+tibble(
+  Component = colnames(wineDataPCADF),
+  W = sapply(wineDataPCADF, \(x) shapiro.test(x)$statistic),
+  `p-value` = sapply(wineDataPCADF, \(x) shapiro.test(x)$p.value)
+) |>
+  mutate(W = round(W, 3), `p-value` = round(`p-value`, 5)) |>
+  knitr::kable()
+```
+
+```{r}
+#| label: tbl-group-rank
+#| tbl-cap: "Sample size, number of variables, and covariance matrix rank for each cultivar."
+
+menciaData   <- wineData[wineData$Cultivar == "Mencia", 3:25]
+alicanteData <- wineData[wineData$Cultivar == "Alicante Bouschet", 3:25]
+
+tibble(
+  Cultivar = c("Mencia", "Alicante Bouschet"),
+  n = c(nrow(menciaData), nrow(alicanteData)),
+  p = c(ncol(menciaData), ncol(alicanteData)),
+  `Max rank (n-1)` = n - 1,
+  `Covariance rank` = c(qr(cov(menciaData))$rank, qr(cov(alicanteData))$rank)
+) |>
+  knitr::kable()
+```
+
+Within-cultivar Mahalanobis distances cannot be computed on the full variable set. The covariance matrix of a group of $n$ observations has rank at most $n-1$, so with 20 Mencía and 10 Alicante Bouschet wines against 23 variables, both within-group covariance matrices are singular and cannot be inverted (@tbl-group-rank). We therefore restrict the within-group analysis to the leading principal components of each cultivar, retaining enough components that the covariance matrix is of full rank.
+
+```{r}
+#| label: fig-scree-groups
+#| fig-cap: "Proportion of variance explained by each principal component, computed separately within each cultivar."
+#| fig-width: 7
+#| fig-height: 4
+
+scree_data <- function(dat, cultivar) {
+  p <- prcomp(dat, center = TRUE, scale. = TRUE)
+  tibble(
+    Cultivar = cultivar,
+    PC = seq_along(p$sdev),
+    Proportion = p$sdev^2 / sum(p$sdev^2)
+  )
+}
+
+bind_rows(
+  scree_data(menciaData, "Mencia"),
+  scree_data(alicanteData, "Alicante Bouschet")
+) |>
+  filter(PC <= 10) |>
+  ggplot(aes(PC, Proportion)) +
+  geom_col(fill = "grey40") +
+  facet_wrap(~Cultivar) +
+  scale_x_continuous(breaks = 1:10) +
+  labs(x = "Principal component", y = "Proportion of variance explained") +
+  theme_minimal()
+```
 
 
+```{r}
+#| label: tbl-mahalanobis-groupwise
+#| tbl-cap: "Within-cultivar Mahalanobis distances computed on the leading principal components of each group."
 
+pca_mahal <- function(dat, k) {
+  scores <- prcomp(dat, center = TRUE, scale. = TRUE)$x[, 1:k, drop = FALSE]
+  mahalanobis(scores, center = colMeans(scores), cov = cov(scores))
+}
 
-menciaData = wineData[wineData$Cultivar=="Mencia",c(-1,-2)]
-alicanteData = wineData[wineData$Cultivar=="Alicante Bouschet",c(-1,-2)]
-
-muHatMencia = colMeans(menciaData) 
-sigmaHatMencia = cov(menciaData)
-mahalanobisMencia = mahalanobis(menciaData, center=muHatMencia, cov=sigmaHatMencia)
-det(sigmaHatMencia)
-pchisq(mahalanobisMencia, df=23, lower.tail = FALSE)
-
-menciaPCA = as.matrix(menciaData) %*% eigen(sigmaHatMencia)$vectors
-menciaPCAnonredundant = menciaPCA[,1:2]
-sigmaHatMenciaPCAnonredundant = cov(menciaPCAnonredundant)
-muHatMenciaPCAnonredundant = apply(menciaPCAnonredundant,MARGIN=2,FUN = mean)
-dMmenciaPCAnonredundant = mahalanobis(menciaPCAnonredundant,center = muHatMenciaPCAnonredundant,cov = sigmaHatMenciaPCAnonredundant)
-
-
-
-muHatAlicante = colMeans(alicanteData)
-sigmaHatAlicante = cov(alicanteData)
-mahalanobisAlicante = mahalanobis(alicanteData, center=muHatAlicante, cov=sigmaHatAlicante)
-PCAAlicante = prcomp(alicanteData, center=TRUE, scale=TRUE)
-plot(PCAAlicante)
-alicantePCA = as.matrix(alicanteData) %*% eigen(sigmaHatAlicante)$vectors
-alicantePCAnonredundant = alicantePCA[,1:3]
-sigmaHatAlicantePCAnonredundant = cov(alicantePCAnonredundant)
-muHatAlicantePCAnonredundant = apply(alicantePCAnonredundant,MARGIN=2,FUN = mean)
-dMalicantePCAnonredundant = mahalanobis(alicantePCAnonredundant,center = muHatAlicantePCAnonredundant,cov = sigmaHatAlicantePCAnonredundant)
-
-# note: covariance matrix is not full rank: sample size too small. rank of covariance matrix cannot exceed n-1.
+bind_rows(
+  tibble(
+    Wine = wineData$Sample[wineData$Cultivar == "Mencia"],
+    Cultivar = "Mencia",
+    Distance = pca_mahal(menciaData, 2)
+  ),
+  tibble(
+    Wine = wineData$Sample[wineData$Cultivar == "Alicante Bouschet"],
+    Cultivar = "Alicante Bouschet",
+    Distance = pca_mahal(alicanteData, 3)
+  )
+) |>
+  mutate(Distance = round(Distance, 2)) |>
+  arrange(Cultivar, desc(Distance)) |>
+  knitr::kable()
 ```
 
 ### Grouping structure {#sec-clustering}
