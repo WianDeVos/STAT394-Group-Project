@@ -40,10 +40,62 @@ summary(prcomp(wineDataVariables, center = TRUE, scale = TRUE))
 wineDataPCA = wineDataPCA[,1:5]
 summary(wineDataPCA)
 wineDataPCADF = as.data.frame(wineDataPCA)
-apply(wineDataPCADF[21:30,],2,shapiro.test)
+apply(wineDataPCADF[1:20,],2,shapiro.test)
 
+```
+```{r}
 PCAMahalanobis = mahalanobis(wineDataPCADF,center = colMeans(wineDataPCADF),cov = cov(wineDataPCADF))
 PCAMahalanobis
-wineData$surprise = pchisq(wineData$mahalanobis,df=23,lower.tail = FALSE)
+surprise = pchisq(PCAMahalanobis,df=5,lower.tail = FALSE)
+surprise
+surpriseFull = ifelse(surprise <= 0.01, "Very Surprising",
+                      ifelse(surprise <= 0.05, "Surprising",
+                             ifelse(surprise <= 0.1, "Slightly Surprising", surprise)))
+surpriseFull
+```
+```{r}
+PCAFullMenciaMahal = mahalanobis(wineDataPCADF, center=colMeans(wineDataPCADF[1:20,]), cov=cov(wineDataPCADF[1:20,]))
+PCAFullMenciaMahal
+pchisq(PCAFullMenciaMahal, df=5, lower.tail=FALSE)
+```
+```{r}
+PCAFullAlicanteMahal = mahalanobis(wineDataPCADF, center=colMeans(wineDataPCADF[21:30,]), cov=cov(wineDataPCADF[21:30,]))
+PCAFullAlicanteMahal
+pchisq(PCAFullAlicanteMahal, df=5, lower.tail=FALSE)
+```
+
+```{r}
+# PCs from  full dataset, mahalanobis from individual cultivar distributions excluding the individual observation
+
+surpriseFullExc = rep(NA,30)
+mahalFullExc = rep(NA,30)
+for(i in 1:20){
+  wineTemp = wineDataPCADF[1:20,][-i,]
+  muTemp = colMeans(wineTemp)
+  covTemp = cov(wineTemp)
+  mahalFullExc[i] = mahalanobis(wineDataPCADF[i,], center = muTemp, cov=covTemp)
+  surpriseFullExc[i] = pchisq(mahalFullExc[i], df=5, lower.tail=FALSE)
+}
+for(i in 21:30){
+  wineTemp = wineDataPCADF[21:30,][-i,]
+  muTemp = colMeans(wineTemp)
+  covTemp = cov(wineTemp)
+  mahalFullExc[i] = mahalanobis(wineDataPCADF[i,], center = muTemp, cov=covTemp)
+  surpriseFullExc[i] = pchisq(mahalFullExc[i], df=5, lower.tail=FALSE)
+}
+mahalFullExc
+surpriseFullExc <= 0.1
+```
+
+```{r}
+# mahalanobis with PCA assuming no grouping in data
+
+mahal1Group = mahalanobis(wineDataPCADF, center=colMeans(wineDataPCADF), cov = cov(wineDataPCADF))
+mahal1Group
+surprise1Group = pchisq(mahal1Group, df=5, lower.tail=FALSE)
+surprise1GroupWords = ifelse(surprise1Group <= 0.01, "Very Surprising",
+                             ifelse(surprise1Group <= 0.05, "Surprising",
+                                    ifelse(surprise1Group <=0.1, "Slightly Surprising", round(surprise1Group,5))))
+surprise1GroupWords
 ```
 
