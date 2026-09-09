@@ -99,3 +99,24 @@ surprise1GroupWords = ifelse(surprise1Group <= 0.01, "Very Surprising",
 surprise1GroupWords
 ```
 
+```{r}
+# identifying variables that load mainly on PC2
+rot = as.data.frame(prcomp(wineDataVariables,center=TRUE,scale=TRUE)$rotation)[,1:5]
+max.col(abs(rot))
+rot$PC2[max.col(abs(rot))==2]
+rownames(rot[c(5:8,23),])
+```
+```{r}
+# checking if sample T25 is significantly different from mencia at all
+mahalanobis(wineDataPCADF[25,], center = colMeans(wineDataPCADF[1:20,]), cov = cov(wineDataPCADF[1:20,]))
+pchisq(12.66538,df=5,lower.tail = FALSE)
+```
+```{r}
+#  checking if samples 23-26 are inconsistent with AB
+library(dplyr)
+mahalTemp = mahalanobis(wineDataPCADF[23:26,], center = colMeans(wineDataPCADF[21:30,]), cov = cov(wineDataPCADF[21:30,])) 
+
+pchisq(mahalanobis(wineDataPCADF[23:26,], center = colMeans(wineDataPCADF[21:30,]), cov = cov(wineDataPCADF[21:30,])) ,df=5,lower.tail=FALSE)
+
+```
+
