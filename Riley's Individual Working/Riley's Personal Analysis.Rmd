@@ -112,11 +112,21 @@ mahalanobis(wineDataPCADF[25,], center = colMeans(wineDataPCADF[1:20,]), cov = c
 pchisq(12.66538,df=5,lower.tail = FALSE)
 ```
 ```{r}
-#  checking if samples 23-26 are inconsistent with AB
+#  checking if samples 23-26 are inconsistent with other AB
 library(dplyr)
-mahalTemp = mahalanobis(wineDataPCADF[23:26,], center = colMeans(wineDataPCADF[21:30,]), cov = cov(wineDataPCADF[21:30,])) 
+mahalTemp = mahalanobis(wineDataPCADF[23:26,], center = colMeans(wineDataPCADF[c(21,22,27:30),]), cov = cov(wineDataPCADF[c(21,22,27:30),])) 
 
-pchisq(mahalanobis(wineDataPCADF[23:26,], center = colMeans(wineDataPCADF[21:30,]), cov = cov(wineDataPCADF[21:30,])) ,df=5,lower.tail=FALSE)
+pchisq(mahalanobis(wineDataPCADF[23:26,], center = colMeans(wineDataPCADF[c(21,22,27:30),]), cov = cov(wineDataPCADF[c(21,22,27:30),])) ,df=5,lower.tail=FALSE)
 
+mahalTemp ; pchisq(mahalTemp, df=5, lower.tail = FALSE)
 ```
+
+```{r}
+#  plot of PC2
+plot(wineDataPCADF$PC2,
+     1:30,
+     col = c(rep("red",20),rep("blue",10)),
+     pch = as.character(c(1:9,0)))
+```
+
 
