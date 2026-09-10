@@ -1,0 +1,77 @@
+---
+title: "Riley's Personal Analysis v2"
+output: html_document
+---
+
+```{r}
+wineData = read.csv("~/STAT394-Group-Project/extracted data.csv", header=TRUE)
+summary(wineData)
+```
+```{r}
+library(reshape2)
+library(ggplot2)
+wineData$Cultivar = c(rep("Mencia",20),rep("Alicante Bouschet",10))
+wineMelt = melt(wineData[,-c(1,2)],
+                id.vars = "Cultivar",
+                variable.name = "Measure")
+ggplot(data=wineMelt, aes(x=Measure, y=value)) +
+  geom_boxplot(aes(col=Measure), notch = FALSE) +
+  scale_y_log10() +
+  facet_grid(~Cultivar) +
+  ylab("Values")
+```
+
+```{r}
+apply(wineData[1:20,3:25],2,shapiro.test)
+```
+
+First try PCA on whole dataset, look for cultivar separation.
+
+```{r}
+wineDataVariables = wineData[,3:25]
+
+
+wineDataPCA = prcomp(wineDataVariables, center = TRUE, scale = TRUE)$x
+
+summary(prcomp(wineDataVariables, center = TRUE, scale = TRUE))
+# first 5 PCs have stdev>1, drop rest
+wineDataPCA = wineDataPCA[,1:5]
+summary(wineDataPCA)
+wineDataPCADF = as.data.frame(wineDataPCA)
+apply(wineDataPCADF[1:20,],2,shapiro.test)
+
+```
+```{r}
+# mahalanobis to find surprising obs from model assuming no groups
+PCAMahalanobis = mahalanobis(wineDataPCADF,center = colMeans(wineDataPCADF),cov = cov(wineDataPCADF))
+PCAMahalanobis
+surprise = pchisq(PCAMahalanobis,df=5,lower.tail = FALSE)
+surprise
+surpriseFull = ifelse(surprise <= 0.01, "Very Surprising",
+                      ifelse(surprise <= 0.05, "Surprising",
+                             ifelse(surprise <= 0.1, "Slightly Surprising", round(surprise,4))))
+surpriseFull
+```
+```{r}
+# check if AB obs are consistent with M distribution
+PCAFullMenciaMahal = mahalanobis(wineDataPCADF, center=colMeans(wineDataPCADF[1:20,]), cov=cov(wineDataPCADF[1:20,]))
+PCAFullMenciaMahal
+surpriseMencia = pchisq(PCAFullMenciaMahal, df=5, lower.tail=FALSE)
+surpriseMenciaWords = ifelse(surpriseMencia <= 0.01, "Very Surprising",
+                      ifelse(surpriseMencia <= 0.05, "Surprising",
+                             ifelse(surpriseMencia <= 0.1, "Slightly Surprising", round(surprise,4))))
+surpriseMenciaWords
+```
+```{r}
+# check if M obs are consistent with AB distribution
+PCAFullAlicanteMahal = mahalanobis(wineDataPCADF, center=colMeans(wineDataPCADF[21:30,]), cov=cov(wineDataPCADF[21:30,]))
+PCAFullAlicanteMahal
+surpriseAlicante = pchisq(PCAFullAlicanteMahal, df=5, lower.tail=FALSE)
+surpriseAlicanteWords = ifelse(surpriseAlicante <= 0.01, "Very Surprising",
+                      ifelse(surpriseAlicante <= 0.05, "Surprising",
+                             ifelse(surpriseAlicante <= 0.1, "Slightly Surprising", round(surprise,4))))
+surpriseAlicanteWords
+```
+
+
+
