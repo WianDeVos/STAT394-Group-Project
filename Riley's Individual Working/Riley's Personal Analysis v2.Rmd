@@ -59,8 +59,9 @@ PCAFullMenciaMahal
 surpriseMencia = pchisq(PCAFullMenciaMahal, df=5, lower.tail=FALSE)
 surpriseMenciaWords = ifelse(surpriseMencia <= 0.01, "Very Surprising",
                       ifelse(surpriseMencia <= 0.05, "Surprising",
-                             ifelse(surpriseMencia <= 0.1, "Slightly Surprising", round(surprise,4))))
+                             ifelse(surpriseMencia <= 0.1, "Slightly Surprising", round(surpriseMencia,4))))
 surpriseMenciaWords
+surpriseMencia
 ```
 ```{r}
 # check if M obs are consistent with AB distribution
@@ -69,9 +70,108 @@ PCAFullAlicanteMahal
 surpriseAlicante = pchisq(PCAFullAlicanteMahal, df=5, lower.tail=FALSE)
 surpriseAlicanteWords = ifelse(surpriseAlicante <= 0.01, "Very Surprising",
                       ifelse(surpriseAlicante <= 0.05, "Surprising",
-                             ifelse(surpriseAlicante <= 0.1, "Slightly Surprising", round(surprise,4))))
+                             ifelse(surpriseAlicante <= 0.1, "Slightly Surprising", round(surpriseAlicante,4))))
 surpriseAlicanteWords
+surpriseAlicante
+```
+
+```{r}
+# PCs from  full dataset, mahalanobis from individual cultivar distributions excluding the individual observation
+
+surpriseCulExc = rep(NA,30)
+mahalCulExc = rep(NA,30)
+for(i in 1:20){
+  wineTemp = wineDataPCADF[1:20,][-i,]
+  muTemp = colMeans(wineTemp)
+  covTemp = cov(wineTemp)
+  mahalCulExc[i] = mahalanobis(wineDataPCADF[i,], center = muTemp, cov=covTemp)
+  surpriseCulExc[i] = pchisq(mahalFullExc[i], df=5, lower.tail=FALSE)
+}
+for(i in 21:30){
+  iAdj = i - 20
+  wineTemp = wineDataPCADF[21:30,][-iAdj,]
+  muTemp = colMeans(wineTemp)
+  covTemp = cov(wineTemp)
+  mahalCulExc[i] = mahalanobis(wineDataPCADF[i,], center = muTemp, cov=covTemp)
+  surpriseCulExc[i] = pchisq(mahalFullExc[i], df=5, lower.tail=FALSE)
+}
+mahalCulExc
+surpriseCulExcWords =  ifelse(surpriseCulExc <= 0.01, "Very Surprising",
+                      ifelse(surpriseCulExc <= 0.05, "Surprising",
+                             ifelse(surpriseCulExc <= 0.1, "Slightly Surprising", round(surpriseCulExc,4))))
+surpriseCulExcWords
+round(surpriseCulExc,6)
+```
+
+```{r}
+#  playing around with plots
+library(ggplot2)
+library(ggcorrplot)
+library(GGally)
+plot(wineDataPCADF$PC1,
+     1:30,
+     col = c(rep("red",20),rep("blue",10)),
+     pch = c(LETTERS,letters[1:4]))
+```
+
+```{r}
+# playing with graphs for within AB subgroup
+plot(wineDataPCADF[21:30,]$PC4,
+     1:10,
+     col = c("green",rep("black",5),rep("green",4)),
+     pch = as.character(c(1:9,0)))
+```
+
+```{r}
+# mahalanobis analysis of subclusters within AB (without exclusion) (all PCs) (PCs from full dataset)
+wineAB1 = wineDataPCADF[c(21,27:30),]
+wineAB2 = wineDataPCADF[22:26,]
+muAB1 = colMeans(wineAB1)
+muAB2 = colMeans(wineAB2)
+sigAB1 = cov(wineAB1)
+sigAB2 = cov(wineAB2)
+mahalanobis(wineAB1,center = muAB1, cov = sigAB1)
+# samples too small to calculate mahalanobis distance on 5 variables. PC5 shows no clustering, drop and reattempt
 ```
 
 
+```{r}
+# mahalanobis analysis of subclusters within AB (without exclusion) (PC1-4) (PCs from full dataset)
+wineAB1 = wineDataPCADF[c(21,27:30),1:4]
+wineAB2 = wineDataPCADF[22:26,1:4]
+muAB1 = colMeans(wineAB1)
+muAB2 = colMeans(wineAB2)
+sigAB1 = cov(wineAB1)
+sigAB2 = cov(wineAB2)
+mahalanobis(wineAB1,center = muAB1, cov = sigAB1)
+# still too many variables for number of obs, gives constant dM. repeat with just PC1,PC2
+```
 
+
+```{r}
+# mahalanobis analysis of subclusters within AB (without exclusion) (PC1-3) (PCs from full dataset)
+wineAB1 = wineDataPCADF[c(21,27:30),1:3]
+wineAB2 = wineDataPCADF[22:26,1:3]
+muAB1 = colMeans(wineAB1)
+muAB2 = colMeans(wineAB2)
+sigAB1 = cov(wineAB1)
+sigAB2 = cov(wineAB2)
+mahalanobis(wineAB1,center = muAB1, cov = sigAB1)
+mahalanobis(wineAB2,center = muAB1, cov = sigAB1)
+mahalanobis(wineAB2,center = muAB2, cov = sigAB2)
+mahalanobis(wineAB1,center = muAB2, cov = sigAB2)
+```
+
+```{r}
+# mahalanobis analysis of subclusters within AB (without exclusion) (PC1-2) (PCs from full dataset)
+wineAB1 = wineDataPCADF[c(21,27:30),1:2]
+wineAB2 = wineDataPCADF[22:26,1:2]
+muAB1 = colMeans(wineAB1)
+muAB2 = colMeans(wineAB2)
+sigAB1 = cov(wineAB1)
+sigAB2 = cov(wineAB2)
+mahalanobis(wineAB1,center = muAB1, cov = sigAB1)
+mahalanobis(wineAB2,center = muAB1, cov = sigAB1)
+mahalanobis(wineAB2,center = muAB2, cov = sigAB2)
+mahalanobis(wineAB1,center = muAB2, cov = sigAB2)
+```
