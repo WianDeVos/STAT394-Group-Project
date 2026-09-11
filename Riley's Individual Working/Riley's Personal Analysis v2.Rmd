@@ -85,7 +85,7 @@ for(i in 1:20){
   muTemp = colMeans(wineTemp)
   covTemp = cov(wineTemp)
   mahalCulExc[i] = mahalanobis(wineDataPCADF[i,], center = muTemp, cov=covTemp)
-  surpriseCulExc[i] = pchisq(mahalFullExc[i], df=5, lower.tail=FALSE)
+  surpriseCulExc[i] = pchisq(mahalCulExc[i], df=5, lower.tail=FALSE)
 }
 for(i in 21:30){
   iAdj = i - 20
@@ -93,7 +93,7 @@ for(i in 21:30){
   muTemp = colMeans(wineTemp)
   covTemp = cov(wineTemp)
   mahalCulExc[i] = mahalanobis(wineDataPCADF[i,], center = muTemp, cov=covTemp)
-  surpriseCulExc[i] = pchisq(mahalFullExc[i], df=5, lower.tail=FALSE)
+  surpriseCulExc[i] = pchisq(mahalCulExc[i], df=5, lower.tail=FALSE)
 }
 mahalCulExc
 surpriseCulExcWords =  ifelse(surpriseCulExc <= 0.01, "Very Surprising",
@@ -130,7 +130,7 @@ muAB1 = colMeans(wineAB1)
 muAB2 = colMeans(wineAB2)
 sigAB1 = cov(wineAB1)
 sigAB2 = cov(wineAB2)
-mahalanobis(wineAB1,center = muAB1, cov = sigAB1)
+# mahalanobis(wineAB1,center = muAB1, cov = sigAB1)
 # samples too small to calculate mahalanobis distance on 5 variables. PC5 shows no clustering, drop and reattempt
 ```
 
@@ -174,4 +174,36 @@ mahalanobis(wineAB1,center = muAB1, cov = sigAB1)
 mahalanobis(wineAB2,center = muAB1, cov = sigAB1)
 mahalanobis(wineAB2,center = muAB2, cov = sigAB2)
 mahalanobis(wineAB1,center = muAB2, cov = sigAB2)
+```
+```{r}
+# factor loadings
+prcomp(wineDataVariables, center = TRUE, scale = TRUE)$rotation[,1:2]
+library(ggbiplot)
+library(rlang)
+ggbiplot(prcomp(wineDataVariables, center = TRUE, scale = TRUE), obs.scale = 1, var.scale = 1, alpha = 0.1)
+```
+
+```{r}
+# mahalanobis analysis of subclusters within AB (with exclusion) (PC1-2) (PCs from full dataset)
+wineAB1 = wineDataPCADF[c(21,27:30),1:2]
+wineAB2 = wineDataPCADF[22:26,1:2]
+wineAB = wineDataPCADF[21:30,1:2]
+
+surpFromAB1Exc = rep(NA,10)
+surpFromAB2Exc = rep(NA,10)
+for(i in 1:10){
+  wineTemp = wineAB[-i,]
+  
+}
+ 
+
+
+# muAB1 = colMeans(wineAB1)
+# muAB2 = colMeans(wineAB2)
+# sigAB1 = cov(wineAB1)
+# sigAB2 = cov(wineAB2)
+# mahalanobis(wineAB1,center = muAB1, cov = sigAB1)
+# mahalanobis(wineAB2,center = muAB1, cov = sigAB1)
+# mahalanobis(wineAB2,center = muAB2, cov = sigAB2)
+# mahalanobis(wineAB1,center = muAB2, cov = sigAB2)
 ```
