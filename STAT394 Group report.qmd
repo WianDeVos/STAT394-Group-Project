@@ -148,7 +148,18 @@ wine |>
     legend.title = "Corr"
   )
 ```
-Univariate distributions by cultivar
+COULD POTENTIALLY CUT THIS KIND OF REDUNDANT \/
+```{r Univariate Distributions}
+#| label: fig-Univariate-distributions
+#| fig-cap: "Univariate Distributions, by Cultivar"
+
+wine |>
+  pivot_longer(where(is.numeric), names_to = "Variable", values_to = "value") |>
+  ggplot(aes(value, fill = Cultivar)) +
+  geom_histogram(aes(y = after_stat(density)), alpha = 0.5, bins = 12, position = "identity") +
+  facet_wrap(~Variable, scales = "free") +
+  theme_minimal(base_size = 10)
+```
 
 histograms / density plots with normal overlay 
 
@@ -165,6 +176,7 @@ PLAN: MVN means Univariate normality per variable (testing each variables normal
 library(rstatix)
 
 wine |>
+  group_by(Cultivar) |>
   shapiro_test(
     Tot_Phen_Ind, Col_Int_420_520, Col_Int_420_520_620, Hue, Chem_Age_Ind,
     Tot_Anthocyans, Tot_Anthocyanins, Col_Anthocyanins, Tot_Tannins,
@@ -180,8 +192,31 @@ wine |>
   arrange(`p-value`) |>
   knitr::kable()
 ```
+```{r}
 
-formal multivariate check with mahalanobis
+```
+
+Splitting by cultivar clears up some of pooled sample results for "Tot_Anthocyanins"	and "Tot_Anthocyans", both strongly non-normal pooled with extremely small p-values, but are fine within the Alicante Bouschet Cultivar. This suggests a gap from @sec-descriptive creating an artificial mixture effect, not real non-normality 
+
+12 of 42 within-cultivar tests still reject at 5% significance, this is too many to be random as with 42 variables we would expect about 2 to reject by chance (42 * 0.05 = 2.1). Mencia's total concentration variables are very poor "Tot_Anthocyanins", "Tot_Anthocyans" and coumaroylated derivatives are rejected for both cultivars "DpGICm" and "PnGICm" also in just mencia "PtGICm" which is already flagged before as the least consistent acylated compounds. 
+
+Since marginal normality is necessary for MVN, these rejection are enough to conclude neither cultivars phenolic profile is multivariate normal. However, we must consider a power caveat where the probability we reject $H_0$ given $H_1$ is true is dictated by the number of observations and alicante Bouschet has n=10 observations which half the size of mencia. So, when we find this cultivar has fewer rejections it may not just indicate its more normal but that its harder to detect non-normality. 
+
+```{r}
+#| label: fig-flagged-distributions
+#| fig-cap: "Distributions of variables rejecting univariate normality, by cultivar."
+flagged <- c("Tot_Anthocyanins", "Tot_Anthocyans", "Tot_Tannins",
+             "DpGlCm", "PnGlCm", "PtGlCm")
+
+wine |>
+  select(Cultivar, all_of(flagged)) |>
+  pivot_longer(-Cultivar, names_to = "Variable", values_to = "value") |>
+  ggplot(aes(value, fill = Cultivar)) +
+  geom_histogram(aes(y = after_stat(density)), alpha = 0.5, bins = 12, position = "identity") +
+  facet_wrap(~Variable, scales = "free") +
+  theme_minimal(base_size = 11) +
+  labs(title = "Distributions of Variables Rejecting Univariate Normality")
+```
 
 ### Atypical observations {#sec-outliers}
 
