@@ -160,6 +160,12 @@ mahalanobis(wineAB1,center = muAB1, cov = sigAB1)
 mahalanobis(wineAB2,center = muAB1, cov = sigAB1)
 mahalanobis(wineAB2,center = muAB2, cov = sigAB2)
 mahalanobis(wineAB1,center = muAB2, cov = sigAB2)
+
+pchisq(mahalanobis(wineAB1,center = muAB1, cov = sigAB1), df=2, lower.tail = FALSE)
+pchisq(mahalanobis(wineAB2,center = muAB1, cov = sigAB1), df=2, lower.tail = FALSE)
+pchisq(mahalanobis(wineAB2,center = muAB2, cov = sigAB2), df=2, lower.tail = FALSE)
+pchisq(mahalanobis(wineAB1,center = muAB2, cov = sigAB2), df=2, lower.tail = FALSE)
+
 ```
 
 ```{r}
@@ -277,3 +283,169 @@ surpFromAB2ExcWords =  ifelse(surpFromAB2Exc <= 0.01, "Very Surprising",
 surpFromAB1ExcWords
 surpFromAB2ExcWords
 ```
+
+Results write-up sections
+
+```{r}
+# PCA
+PCs = prcomp(wineDataVariables, center = TRUE, scale = TRUE)
+screeplot(PCs,type = "lines") +
+  abline(h=1, col="red")
+```
+
+```{r}
+# Shapiro-Wilk test of PC1-5 aggregate and by cultivar
+aggShap = rep(NA,5)
+menShap = rep(NA,5)
+abShap = rep(NA,5)
+for(i in 1:5){
+  aggShap[i] = shapiro.test(wineDataPCADF[,i])$p.value
+  menShap[i] = shapiro.test(wineDataPCADF[1:20,i])$p.value
+  abShap[i] = shapiro.test(wineDataPCADF[21:30,i])$p.value
+}
+shapDF = data.frame(Component = c("PC1","PC2","PC3","PC4","PC5"), Aggregate = aggShap, Mencia = menShap, AlicanteBouschet = abShap)
+colnames(shapDF)[4] = "Alicante Bouschet"
+
+for(i in 1:5){
+  for(j in 2:4){
+    charTemp = as.character(round(as.numeric(shapDF[i,j]),4))
+    shapDF[i,j] = ifelse(shapDF[i,j] <= 0.01, paste0(charTemp," ***"),
+                        ifelse(shapDF[i,j] <= 0.05, paste0(charTemp, " **"),
+                               ifelse(shapDF[i,j] <=0.1, paste0(charTemp, " *"),
+                                      charTemp)))
+  }
+}
+pander(shapDF)
+```
+
+
+```{r}
+# graphical of PCs, full dataset
+plot(wineDataPCADF$PC1,
+     wineDataPCADF$PC2,
+     col = c(rep("red",20),rep("blue",10)),
+     lwd = 3) + text(wineDataPCADF$PC1+0.1, wineDataPCADF$PC2-0.2, wineData$Sample, cex = 0.5)
+# ggplot(wineDataPCADF, aes(x=PC1,y=PC2)) +
+#   geom_point(colour = c(rep("red",20),rep("blue",10))) +
+#   geom_text(aes(x=PC1,y=PC2, label = wineData$Sample, cex=0.5))
+```
+
+
+```{r}
+# surprising results for mahalanobis: full model, cultivar split, cultivar split with exclusion
+library(pander)
+presFullModel = rep(NA,30)
+presMenInc = rep(NA,30)
+presABInc = rep(NA,30)
+presSplitExc = rep(NA,30)
+for(i in 1:30){
+  if(surprise[i] < 0.0001){
+    presFullModel[i] = "< 0.0001 ***"
+  } else if(surprise[i] <= 0.01){
+    presFullModel[i] = paste0(round(surprise[i],4)," ***")
+  } else if(surprise[i] <= 0.05){
+    presFullModel[i] = paste0(round(surprise[i],4)," **")
+  } else if(surprise[i] <= 0.1){
+    presFullModel[i] = paste0(round(surprise[i],4)," *")
+  } else {
+    presFullModel[i] = as.character(round(surprise[i],4))
+  }
+  if(surpriseMencia[i] < 0.0001){
+    presMenInc[i] = "< 0.0001 ***"
+  } else if(surpriseMencia[i] <= 0.01){
+    presMenInc[i] = paste0(round(surpriseMencia[i],4)," ***")
+  } else if(surpriseMencia[i] <= 0.05){
+    presMenInc[i] = paste0(round(surpriseMencia[i],4)," **")
+  } else if(surpriseMencia[i] <= 0.1){
+    presMenInc[i] = paste0(round(surpriseMencia[i],4)," *")
+  } else {
+    presMenInc[i] = as.character(round(surpriseMencia[i],4))
+  }
+  if(surpriseAlicante[i] < 0.0001){
+    presABInc[i] = "< 0.0001 ***"
+  } else if(surpriseAlicante[i] <= 0.01){
+    presABInc[i] = paste0(round(surpriseAlicante[i],4)," ***")
+  } else if(surpriseAlicante[i] <= 0.05){
+    presABInc[i] = paste0(round(surpriseAlicante[i],4)," **")
+  } else if(surpriseAlicante[i] <= 0.1){
+    presABInc[i] = paste0(round(surpriseAlicante[i],4)," *")
+  } else {
+    presABInc[i] = as.character(round(surpriseAlicante[i],4))
+  }
+  if(surpriseCulExc[i] < 0.0001){
+    presSplitExc[i] = "< 0.0001 ***"
+  } else if(surpriseCulExc[i] <= 0.01){
+    presSplitExc[i] = paste0(round(surpriseCulExc[i],4)," ***")
+  } else if(surpriseCulExc[i] <= 0.05){
+    presSplitExc[i] = paste0(round(surpriseCulExc[i],4)," **")
+  } else if(surpriseCulExc[i] <= 0.1){
+    presSplitExc[i] = paste0(round(surpriseCulExc[i],4)," *")
+  } else {
+    presSplitExc[i] = as.character(round(surpriseCulExc[i],4))
+  }
+}
+mahalTable = data.frame(sample = wineData$Sample, fullModel = presFullModel, menciaInc = presMenInc, abInc = presABInc, splitExc = presSplitExc)
+mahalTable$splitExc = gsub("2e-04","0.0002",mahalTable$splitExc)
+colnames(mahalTable) = c("Sample","Full Dataset","Mencia","Alicante Bouschet","Cultivar Excluding Sample")
+pander(mahalTable)
+```
+
+```{r}
+# graph PC1-2 AB split
+plot(wineDataPCADF[21:30,]$PC1,
+     wineDataPCADF[21:30,]$PC2,
+     col = c("green",rep("black",5),rep("green",4)),
+     pch = as.character(c(1:9,0)))
+```
+
+```{r}
+# mahalanobis AB PC1-3 without exclusion
+presCluster1 = rep(NA,10)
+presCluster2 = rep(NA,10)
+
+wineAB1 = wineDataPCADF[c(21,27:30),1:3]
+wineAB2 = wineDataPCADF[22:26,1:3]
+muAB1 = colMeans(wineAB1)
+muAB2 = colMeans(wineAB2)
+sigAB1 = cov(wineAB1)
+sigAB2 = cov(wineAB2)
+
+clus1from1surp = pchisq(mahalanobis(wineAB1,center = muAB1, cov = sigAB1), df=2, lower.tail = FALSE)
+clus2from1surp = pchisq(mahalanobis(wineAB2,center = muAB1, cov = sigAB1), df=2, lower.tail = FALSE)
+clus2from2surp = pchisq(mahalanobis(wineAB2,center = muAB2, cov = sigAB2), df=2, lower.tail = FALSE)
+clus1from2surp = pchisq(mahalanobis(wineAB1,center = muAB2, cov = sigAB2), df=2, lower.tail = FALSE)
+
+clus1Surp = c(clus1from1surp[1],clus2from1surp,clus1from1surp[2:5])
+clus2Surp = c(clus1from2surp[1],clus2from2surp,clus1from2surp[2:5])
+
+
+
+for(i in 1:10){
+  if(clus1Surp[i] < 0.0001){
+    presCluster1[i] = "< 0.0001 ***"
+  } else if(clus1Surp[i] <= 0.01){
+    presCluster1[i] = paste0(round(clus1Surp[i],4)," ***")
+  } else if(clus1Surp[i] <= 0.05){
+    presCluster1[i] = paste0(round(clus1Surp[i],4)," **")
+  } else if(clus1Surp[i] <= 0.1){
+    presCluster1[i] = paste0(round(clus1Surp[i],4)," *")
+  } else {
+    presCluster1[i] = as.character(round(clus1Surp[i],4))
+  }
+  if(clus2Surp[i] < 0.0001){
+    presCluster2[i] = "< 0.0001 ***"
+  } else if(clus2Surp[i] <= 0.01){
+    presCluster2[i] = paste0(round(clus2Surp[i],4)," ***")
+  } else if(clus2Surp[i] <= 0.05){
+    presCluster2[i] = paste0(round(clus2Surp[i],4)," **")
+  } else if(clus2Surp[i] <= 0.1){
+    presCluster2[i] = paste0(round(clus2Surp[i],4)," *")
+  } else {
+    presCluster2[i] = as.character(round(clus2Surp[i],4))
+  }
+}
+ABDF = data.frame(Sample = wineData$Sample[21:30], Cluster1 = presCluster1, Cluster2 = presCluster2)
+pander(ABDF)
+```
+
+
