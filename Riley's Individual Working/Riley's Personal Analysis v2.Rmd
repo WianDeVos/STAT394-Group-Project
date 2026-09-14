@@ -39,7 +39,6 @@ wineDataPCA = wineDataPCA[,1:5]
 summary(wineDataPCA)
 wineDataPCADF = as.data.frame(wineDataPCA)
 apply(wineDataPCADF[1:20,],2,shapiro.test)
-
 ```
 ```{r}
 # mahalanobis to find surprising obs from model assuming no groups

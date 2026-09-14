@@ -393,7 +393,23 @@ PCAFullMenciaMahal = mahalanobis(wineDataPCADFR, center=colMeans(wineDataPCADFR[
 surpriseMencia = pchisq(PCAFullMenciaMahal, df=5, lower.tail=FALSE)
 PCAFullAlicanteMahal = mahalanobis(wineDataPCADFR, center=colMeans(wineDataPCADFR[21:30,]), cov=cov(wineDataPCADFR[21:30,]))
 surpriseAlicante = pchisq(PCAFullAlicanteMahal, df=5, lower.tail=FALSE)
-
+surpriseCulExc = rep(NA,30)
+mahalCulExc = rep(NA,30)
+for(i in 1:20){
+  wineTemp = wineDataPCADFR[1:20,][-i,]
+  muTemp = colMeans(wineTemp)
+  covTemp = cov(wineTemp)
+  mahalCulExc[i] = mahalanobis(wineDataPCADFR[i,], center = muTemp, cov=covTemp)
+  surpriseCulExc[i] = pchisq(mahalCulExc[i], df=5, lower.tail=FALSE)
+}
+for(i in 21:30){
+  iAdj = i - 20
+  wineTemp = wineDataPCADFR[21:30,][-iAdj,]
+  muTemp = colMeans(wineTemp)
+  covTemp = cov(wineTemp)
+  mahalCulExc[i] = mahalanobis(wineDataPCADFR[i,], center = muTemp, cov=covTemp)
+  surpriseCulExc[i] = pchisq(mahalCulExc[i], df=5, lower.tail=FALSE)
+}
 
 for(i in 1:30){
   if(surprise[i] < 0.0001){
