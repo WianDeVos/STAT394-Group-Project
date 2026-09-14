@@ -47,7 +47,7 @@ The resulting data frame contains 30 wines (20 Mencía, 10 Alicante Bouschet) an
 
 ### Statistical methods
 
-This Report makes use of Principle Component Analysis to .... We also make use of the Shapiro-Wilk test of Normality to judge whether are variables are normally distributed on a univariate level. 
+This Report makes use of Principle Component Analysis to .... We also make use of the Shapiro-Wilk test of Normality to judge whether are variables are normally distributed on a univariate level.
 
 ## Results {#sec-results}
 
@@ -148,7 +148,9 @@ wine |>
     legend.title = "Corr"
   )
 ```
-COULD POTENTIALLY CUT THIS KIND OF REDUNDANT \/
+
+COULD POTENTIALLY CUT THIS KIND OF REDUNDANT /
+
 ```{r Univariate Distributions}
 #| label: fig-Univariate-distributions
 #| fig-cap: "Univariate Distributions, by Cultivar"
@@ -161,9 +163,9 @@ wine |>
   theme_minimal(base_size = 10)
 ```
 
-histograms / density plots with normal overlay 
+histograms / density plots with normal overlay
 
-correlation heat map --> can help show why we need PCA.
+correlation heat map --\> can help show why we need PCA.
 
 ### Assessing multivariate normality {#sec-normality}
 
@@ -192,15 +194,16 @@ wine |>
   arrange(`p-value`) |>
   knitr::kable()
 ```
+
 ```{r}
 
 ```
 
-Splitting by cultivar clears up some of pooled sample results for "Tot_Anthocyanins"	and "Tot_Anthocyans", both strongly non-normal pooled with extremely small p-values, but are fine within the Alicante Bouschet Cultivar. This suggests a gap from @sec-descriptive creating an artificial mixture effect, not real non-normality 
+Splitting by cultivar clears up some of pooled sample results for "Tot_Anthocyanins" and "Tot_Anthocyans", both strongly non-normal pooled with extremely small p-values, but are fine within the Alicante Bouschet Cultivar. This suggests a gap from @sec-descriptive creating an artificial mixture effect, not real non-normality
 
-12 of 42 within-cultivar tests still reject at 5% significance, this is too many to be random as with 42 variables we would expect about 2 to reject by chance (42 * 0.05 = 2.1). Mencia's total concentration variables are very poor "Tot_Anthocyanins", "Tot_Anthocyans" and coumaroylated derivatives are rejected for both cultivars "DpGICm" and "PnGICm" also in just mencia "PtGICm" which is already flagged before as the least consistent acylated compounds. 
+12 of 42 within-cultivar tests still reject at 5% significance, this is too many to be random as with 42 variables we would expect about 2 to reject by chance (42 \* 0.05 = 2.1). Mencia's total concentration variables are very poor "Tot_Anthocyanins", "Tot_Anthocyans" and coumaroylated derivatives are rejected for both cultivars "DpGICm" and "PnGICm" also in just mencia "PtGICm" which is already flagged before as the least consistent acylated compounds.
 
-Since marginal normality is necessary for MVN, these rejection are enough to conclude neither cultivars phenolic profile is multivariate normal. However, we must consider a power caveat where the probability we reject $H_0$ given $H_1$ is true is dictated by the number of observations and alicante Bouschet has n=10 observations which half the size of mencia. So, when we find this cultivar has fewer rejections it may not just indicate its more normal but that its harder to detect non-normality. 
+Since marginal normality is necessary for MVN, these rejection are enough to conclude neither cultivars phenolic profile is multivariate normal. However, we must consider a power caveat where the probability we reject $H_0$ given $H_1$ is true is dictated by the number of observations and alicante Bouschet has n=10 observations which half the size of mencia. So, when we find this cultivar has fewer rejections it may not just indicate its more normal but that its harder to detect non-normality.
 
 ```{r}
 #| label: fig-flagged-distributions
@@ -221,7 +224,6 @@ wine |>
 ### Atypical observations {#sec-outliers}
 
 The atypicality of a datapoint relative to a group distribution is measured by the Mahalanobis distance. For this dataset, atypicality will be assessed based on distance from the distribution of the cultivar samples, not from the overall dataset. Unfortunately, the number of variables measured, 23, exceeds the sample size of either cultivar, resulting in a singular, non-invertible covariance matrix, making the calculation of the Mahalanobis distance impossible. As such, we will use Principal Component Analysis and remove the non-
-
 
 ```{r}
 #| label: tbl-mahalanobis-pooled
@@ -311,7 +313,6 @@ bind_rows(
   theme_minimal()
 ```
 
-
 ```{r}
 #| label: tbl-mahalanobis-groupwise
 #| tbl-cap: "Within-cultivar Mahalanobis distances computed on the leading principal components of each group."
@@ -336,6 +337,171 @@ bind_rows(
   mutate(Distance = round(Distance, 2)) |>
   arrange(Cultivar, desc(Distance)) |>
   knitr::kable()
+```
+
+```{r}
+# PCA
+PCs = prcomp(wineDataVariables, center = TRUE, scale = TRUE)
+screeplot(PCs,type = "lines") +
+  abline(h=1, col="red")
+```
+
+```{r}
+# Shapiro-Wilk test of PC1-5 aggregate and by cultivar
+library(pander)
+aggShap = rep(NA,5)
+menShap = rep(NA,5)
+abShap = rep(NA,5)
+for(i in 1:5){
+  aggShap[i] = shapiro.test(wineDataPCADF[,i])$p.value
+  menShap[i] = shapiro.test(wineDataPCADF[1:20,i])$p.value
+  abShap[i] = shapiro.test(wineDataPCADF[21:30,i])$p.value
+}
+shapDF = data.frame(Component = c("PC1","PC2","PC3","PC4","PC5"), Aggregate = aggShap, Mencia = menShap, AlicanteBouschet = abShap)
+colnames(shapDF)[4] = "Alicante Bouschet"
+
+for(i in 1:5){
+  for(j in 2:4){
+    charTemp = as.character(round(as.numeric(shapDF[i,j]),4))
+    shapDF[i,j] = ifelse(shapDF[i,j] <= 0.01, paste0(charTemp," ***"),
+                        ifelse(shapDF[i,j] <= 0.05, paste0(charTemp, " **"),
+                               ifelse(shapDF[i,j] <=0.1, paste0(charTemp, " *"),
+                                      charTemp)))
+  }
+}
+pander(shapDF)
+```
+
+```{r}
+# graphical of PCs, full dataset
+plot(wineDataPCADF$PC1,
+     wineDataPCADF$PC2,
+     col = c(rep("red",20),rep("blue",10)),
+     lwd = 3) + text(wineDataPCADF$PC1+0.1, wineDataPCADF$PC2-0.2, wineData$Sample, cex = 0.5)
+```
+
+```{r}
+# surprising results for mahalanobis: full model, cultivar split, cultivar split with exclusion
+presFullModel = rep(NA,30)
+presMenInc = rep(NA,30)
+presABInc = rep(NA,30)
+presSplitExc = rep(NA,30)
+PCAMahalanobis = mahalanobis(wineDataPCADF,center = colMeans(wineDataPCADF),cov = cov(wineDataPCADF))
+surprise = pchisq(PCAMahalanobis,df=5,lower.tail = FALSE)
+PCAFullMenciaMahal = mahalanobis(wineDataPCADF, center=colMeans(wineDataPCADF[1:20,]), cov=cov(wineDataPCADF[1:20,]))
+surpriseMencia = pchisq(PCAFullMenciaMahal, df=5, lower.tail=FALSE)
+PCAFullAlicanteMahal = mahalanobis(wineDataPCADF, center=colMeans(wineDataPCADF[21:30,]), cov=cov(wineDataPCADF[21:30,]))
+surpriseAlicante = pchisq(PCAFullAlicanteMahal, df=5, lower.tail=FALSE)
+
+
+for(i in 1:30){
+  if(surprise[i] < 0.0001){
+    presFullModel[i] = "< 0.0001 ***"
+  } else if(surprise[i] <= 0.01){
+    presFullModel[i] = paste0(round(surprise[i],4)," ***")
+  } else if(surprise[i] <= 0.05){
+    presFullModel[i] = paste0(round(surprise[i],4)," **")
+  } else if(surprise[i] <= 0.1){
+    presFullModel[i] = paste0(round(surprise[i],4)," *")
+  } else {
+    presFullModel[i] = as.character(round(surprise[i],4))
+  }
+  if(surpriseMencia[i] < 0.0001){
+    presMenInc[i] = "< 0.0001 ***"
+  } else if(surpriseMencia[i] <= 0.01){
+    presMenInc[i] = paste0(round(surpriseMencia[i],4)," ***")
+  } else if(surpriseMencia[i] <= 0.05){
+    presMenInc[i] = paste0(round(surpriseMencia[i],4)," **")
+  } else if(surpriseMencia[i] <= 0.1){
+    presMenInc[i] = paste0(round(surpriseMencia[i],4)," *")
+  } else {
+    presMenInc[i] = as.character(round(surpriseMencia[i],4))
+  }
+  if(surpriseAlicante[i] < 0.0001){
+    presABInc[i] = "< 0.0001 ***"
+  } else if(surpriseAlicante[i] <= 0.01){
+    presABInc[i] = paste0(round(surpriseAlicante[i],4)," ***")
+  } else if(surpriseAlicante[i] <= 0.05){
+    presABInc[i] = paste0(round(surpriseAlicante[i],4)," **")
+  } else if(surpriseAlicante[i] <= 0.1){
+    presABInc[i] = paste0(round(surpriseAlicante[i],4)," *")
+  } else {
+    presABInc[i] = as.character(round(surpriseAlicante[i],4))
+  }
+  if(surpriseCulExc[i] < 0.0001){
+    presSplitExc[i] = "< 0.0001 ***"
+  } else if(surpriseCulExc[i] <= 0.01){
+    presSplitExc[i] = paste0(round(surpriseCulExc[i],4)," ***")
+  } else if(surpriseCulExc[i] <= 0.05){
+    presSplitExc[i] = paste0(round(surpriseCulExc[i],4)," **")
+  } else if(surpriseCulExc[i] <= 0.1){
+    presSplitExc[i] = paste0(round(surpriseCulExc[i],4)," *")
+  } else {
+    presSplitExc[i] = as.character(round(surpriseCulExc[i],4))
+  }
+}
+mahalTable = data.frame(sample = wineData$Sample, fullModel = presFullModel, menciaInc = presMenInc, abInc = presABInc, splitExc = presSplitExc)
+mahalTable$splitExc = gsub("2e-04","0.0002",mahalTable$splitExc)
+colnames(mahalTable) = c("Sample","Full Dataset","Mencia","Alicante Bouschet","Cultivar Excluding Sample")
+pander(mahalTable)
+```
+
+```{r}
+# graph PC1-2 AB split
+plot(wineDataPCADF[21:30,]$PC1,
+     wineDataPCADF[21:30,]$PC2,
+     col = c("green",rep("black",5),rep("green",4)),
+     pch = as.character(c(1:9,0)))
+```
+
+```{r}
+# mahalanobis AB PC1-3 without exclusion
+presCluster1 = rep(NA,10)
+presCluster2 = rep(NA,10)
+
+wineAB1 = wineDataPCADF[c(21,27:30),1:3]
+wineAB2 = wineDataPCADF[22:26,1:3]
+muAB1 = colMeans(wineAB1)
+muAB2 = colMeans(wineAB2)
+sigAB1 = cov(wineAB1)
+sigAB2 = cov(wineAB2)
+
+clus1from1surp = pchisq(mahalanobis(wineAB1,center = muAB1, cov = sigAB1), df=2, lower.tail = FALSE)
+clus2from1surp = pchisq(mahalanobis(wineAB2,center = muAB1, cov = sigAB1), df=2, lower.tail = FALSE)
+clus2from2surp = pchisq(mahalanobis(wineAB2,center = muAB2, cov = sigAB2), df=2, lower.tail = FALSE)
+clus1from2surp = pchisq(mahalanobis(wineAB1,center = muAB2, cov = sigAB2), df=2, lower.tail = FALSE)
+
+clus1Surp = c(clus1from1surp[1],clus2from1surp,clus1from1surp[2:5])
+clus2Surp = c(clus1from2surp[1],clus2from2surp,clus1from2surp[2:5])
+
+
+
+for(i in 1:10){
+  if(clus1Surp[i] < 0.0001){
+    presCluster1[i] = "< 0.0001 ***"
+  } else if(clus1Surp[i] <= 0.01){
+    presCluster1[i] = paste0(round(clus1Surp[i],4)," ***")
+  } else if(clus1Surp[i] <= 0.05){
+    presCluster1[i] = paste0(round(clus1Surp[i],4)," **")
+  } else if(clus1Surp[i] <= 0.1){
+    presCluster1[i] = paste0(round(clus1Surp[i],4)," *")
+  } else {
+    presCluster1[i] = as.character(round(clus1Surp[i],4))
+  }
+  if(clus2Surp[i] < 0.0001){
+    presCluster2[i] = "< 0.0001 ***"
+  } else if(clus2Surp[i] <= 0.01){
+    presCluster2[i] = paste0(round(clus2Surp[i],4)," ***")
+  } else if(clus2Surp[i] <= 0.05){
+    presCluster2[i] = paste0(round(clus2Surp[i],4)," **")
+  } else if(clus2Surp[i] <= 0.1){
+    presCluster2[i] = paste0(round(clus2Surp[i],4)," *")
+  } else {
+    presCluster2[i] = as.character(round(clus2Surp[i],4))
+  }
+}
+ABDF = data.frame(Sample = wineData$Sample[21:30], Cluster1 = presCluster1, Cluster2 = presCluster2)
+pander(ABDF)
 ```
 
 ### Grouping structure {#sec-clustering}
