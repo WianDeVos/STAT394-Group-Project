@@ -61,13 +61,13 @@ wine <- read_csv("extracted data.csv") |>
 
 The resulting data frame contains 30 wines (20 Mencía, 10 Alicante Bouschet) and 23 numeric phenolic variables: 5 spectrophotometric/colour variables (`Tot_Phen_Ind`, `Col_Int_420_520`, `Col_Int_420_520_620`, `Hue`, `Chem_Age_Ind`) and 4 anthocyanin/tannin concentration variables (`Tot_Anthocyans`, `Tot_Anthocyanins`, `Col_Anthocyanins`, `Tot_Tannins`) from Tables 1 and 2, and 14 relative-proportion anthocyanin variables — 5 monoglucosides and 9 acylated derivatives (`DpGl` through `MvGlCf`) — from Tables 5 and 6.
 
-#### Principal Component Analysis \[unfinished\]
+#### Principal Component Analysis
 
-Principal Component Analysis (PCA) {citation?} was performed on the dataset extracted from @revilla2016 for the purpose of dimensionality reduction. Principal Components were derived from the full dataset, not from subgroupings of observations. Principal Components with retained variance greater than 1 were kept for use in analysis, and the rest discarded.
+Principal Component Analysis (PCA) was performed on the dataset extracted from @revilla2016 for the purpose of dimensionality reduction. Principal Components were derived from the full dataset, not from subgroupings of observations. Principal Components with retained variance greater than 1 were kept for use in analysis, and the rest discarded.
 
-#### Normality Assessment \[unfinished\]
+#### Normality Assessment
 
-Normality of Principal Components, both in aggregate and within relevant subgroupings, was assessed using Shapiro-Wilk tests {citation?} .
+Normality of Principal Components, both in aggregate and within relevant subgroupings, was assessed using Shapiro-Wilk tests.
 
 #### Graphical Assessment
 
@@ -75,13 +75,13 @@ A scatterplot of Principal Component 1 (PC1) against Principal Component 2 (PC2)
 
 #### Surprising Observations Analysis
 
-Each observation's Mahalanobis distance {citation?} was calculated from the full dataset, from each cultivar, and from its own cultivar excluding itself. A p-value was calculated for how consistent each observation is with each of these distributions, using the property that the squared Mahalanobis distance of points in a shared multivariate normal distribution follows a {chi-squared M} distribution, where M is the number of variables being considered {citation}. Observations with a p-value less than .1 were labelled as "Slightly Surprising," those with p \< .05 were labelled "Surprising," and those with p \< .01 were labelled "Very Surprising."
+Each observation's Mahalanobis distance was calculated from the full dataset, from each cultivar, and from its own cultivar excluding itself. A p-value was calculated for how consistent each observation is with each of these distributions, using the property that the squared Mahalanobis distance of points in a shared multivariate normal distribution follows a $\chi^2_m$ distribution, where $m$ is the number of variables being considered. Observations with a p-value less than .1 were labelled as "Slightly Surprising," those with p \< .05 were labelled "Surprising," and those with p \< .01 were labelled "Very Surprising."
 
 #### Subgrouping Analysis
 
 Following the identification of a potential subgrouping within the Alicante Bouschet cultivar, the Graphical Assessment and Surprising Observation Analysis methods were applied to the Alicante Bouschet samples, with samples T22 to T26 categorised as "Cluster 2" and the rest as "Cluster 1." PC4 and PC5 needed to be excluded from this analysis, as the Mahalanobis distance cannot be meaningfully calculated unless the number of datapoints used to calculate the covariance matrix exceeds the number of variables being considered by at least 2 @pires2024 . For each sample, the Mahalanobis distance was calculated from each theorised cluster, and the p-value obtained.
 
-### Statistical methods
+### Statistical methods (drop this?)
 
 This Report makes use of Principle Component Analysis to .... We also make use of the Shapiro-Wilk test of Normality to judge whether are variables are normally distributed on a univariate level.
 
