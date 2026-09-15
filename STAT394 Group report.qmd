@@ -26,6 +26,22 @@ The remainder of the report is organised as follows. @sec-methodology describes 
 
 ## Methodology {#sec-methodology}
 
+### Materials
+
+#### Data Assembly
+
+Data were extracted from a .docx copy of @revilla2016 using the docxtractor package @docxtractr in R version 4.4.2 @Rlanguage.
+
+#### Statistical Analyses
+
+All statistical analyses were carried out using the base or stats packages of R version 4.4.2 @Rlanguage.
+
+#### Plots and Tables \[unfinished\]
+
+Plots were created using the ggplot2 {+base +others} package {citation} in R {version} {citation} . Tables were created using the pander {/knitr} package {citation}.
+
+### Methods
+
 ### Data assembly
 
 We combined the quantitative data reported in Tables 1, 2, 5 and 6 of @revilla2016 into a single data frame, using the sample labelling from the original tables (`M` = Mencía, `T` = Alicante Bouschet) to derive a `Cultivar` grouping variable.
@@ -44,6 +60,26 @@ wine <- read_csv("extracted data.csv") |>
 ```
 
 The resulting data frame contains 30 wines (20 Mencía, 10 Alicante Bouschet) and 23 numeric phenolic variables: 5 spectrophotometric/colour variables (`Tot_Phen_Ind`, `Col_Int_420_520`, `Col_Int_420_520_620`, `Hue`, `Chem_Age_Ind`) and 4 anthocyanin/tannin concentration variables (`Tot_Anthocyans`, `Tot_Anthocyanins`, `Col_Anthocyanins`, `Tot_Tannins`) from Tables 1 and 2, and 14 relative-proportion anthocyanin variables — 5 monoglucosides and 9 acylated derivatives (`DpGl` through `MvGlCf`) — from Tables 5 and 6.
+
+#### Principal Component Analysis \[unfinished\]
+
+Principal Component Analysis (PCA) {citation?} was performed on the dataset extracted from @revilla2016 for the purpose of dimensionality reduction. Principal Components were derived from the full dataset, not from subgroupings of observations. Principal Components with retained variance greater than 1 were kept for use in analysis, and the rest discarded.
+
+#### Normality Assessment \[unfinished\]
+
+Normality of Principal Components, both in aggregate and within relevant subgroupings, was assessed using Shapiro-Wilk tests {citation?} .
+
+#### Graphical Assessment
+
+A scatterplot of Principal Component 1 (PC1) against Principal Component 2 (PC2) was plotted and assessed visually for separation between the Mencia and Alicante Bouschet cultivars, as well as any other apparent subgroupings.
+
+#### Surprising Observations Analysis
+
+Each observation's Mahalanobis distance {citation?} was calculated from the full dataset, from each cultivar, and from its own cultivar excluding itself. A p-value was calculated for how consistent each observation is with each of these distributions, using the property that the squared Mahalanobis distance of points in a shared multivariate normal distribution follows a {chi-squared M} distribution, where M is the number of variables being considered {citation}. Observations with a p-value less than .1 were labelled as "Slightly Surprising," those with p \< .05 were labelled "Surprising," and those with p \< .01 were labelled "Very Surprising."
+
+#### Subgrouping Analysis \[unfinished\]
+
+Following the identification of a potential subgrouping within the Alicante Bouschet cultivar, the Graphical Assessment and Surprising Observation Analysis methods were applied to the Alicante Bouschet samples, with samples T22 to T26 categorised as "Cluster 2" and the rest as "Cluster 1." PC4 and PC5 needed to be excluded from this analysis, as the Mahalanobis distance cannot be meaningfully calculated unless the number of datapoints used to calculate the covariance matrix exceeds the number of variables being considered by at least 2 {citation}. For each sample, the Mahalanobis distance was calculated from each theorised cluster, and the p-value obtained.
 
 ### Statistical methods
 
