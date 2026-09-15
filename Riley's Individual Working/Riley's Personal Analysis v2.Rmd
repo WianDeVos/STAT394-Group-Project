@@ -447,6 +447,18 @@ ABDF = data.frame(Sample = wineData$Sample[21:30], Cluster1 = presCluster1, Clus
 pander(ABDF)
 ```
 
+```{r}
+#summary table of PCs
+PCs = prcomp(wineDataVariables, center = TRUE, scale = TRUE)
+summ = summary(PCs)
+SDs = summ$importance[1,]
+cumVar = summ$importance[3,]
+PCtable = data.frame(PC = colnames(summ$importance)[1:10], SD = SDs[1:10], Cvar = cumVar[1:10])
+rownames(PCtable) = NULL
+colnames(PCtable)[3] = "Cumulative Variance"
+pander(PCtable)
+```
+
 Writeup
 
 Materials
