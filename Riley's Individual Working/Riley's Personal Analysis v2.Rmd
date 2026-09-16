@@ -459,6 +459,33 @@ colnames(PCtable)[3] = "Cumulative Variance"
 pander(PCtable)
 ```
 
+```{r}
+#table of surprising observations by model: full, cultivar split
+sum(surprise<=.01) ; sum(surprise<=.05) ; sum(surprise<=.1)
+surps = function(x){
+  sSurp=sum((x<0.1 & x>=0.05))
+  Surp = sum(x<0.05 & x>=.01)
+  vSurp = sum(x<0.01)
+  return(c(sSurp,Surp,vSurp))
+}
+surps(surprise) ; round(surprise,3)
+# data.frame(Model = c("No Split","Cultivar Split"), SlSurp = c(surp(surprise)[1],surp(surpriseMencia[1:20])[1]+surp(surpriseAlicante[21:30])[1]),
+#            Sur = c(surp(surprise)[2],
+#                    surp(surpriseMencia[1:20])[2] + surp(surpriseAlicante[21:30])[2]),
+#            vsur = c(surp(surprise)))
+
+modMat = matrix(c(surps(surprise),surps(surpriseMencia[1:20])+surps(surpriseAlicante[21:30])),
+                nrow=2,
+                ncol=3,
+                byrow=TRUE)
+
+modMat
+surObs = as.data.frame(modMat, row.names = c("Full Model","Cultivar Split"))
+colnames(surObs) = c("Slightly Surprising", "Surprising", "Very Surprising")
+surObs
+```
+
+
 Writeup
 
 Materials
