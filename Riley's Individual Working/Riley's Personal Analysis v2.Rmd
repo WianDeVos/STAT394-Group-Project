@@ -399,6 +399,7 @@ plot(wineDataPCADF[21:30,]$PC1,
 
 ```{r}
 # mahalanobis AB PC1-3 without exclusion
+library(pander)
 presCluster1 = rep(NA,10)
 presCluster2 = rep(NA,10)
 
@@ -443,7 +444,7 @@ for(i in 1:10){
     presCluster2[i] = as.character(round(clus2Surp[i],4))
   }
 }
-ABDF = data.frame(Sample = wineData$Sample[21:30], Cluster1 = presCluster1, Cluster2 = presCluster2)
+ABDF = data.frame(Sample = wineData$Sample[21:30], TheorisedCluster = c("Cluster 1",rep("Cluster 2",5),rep("Cluster 1",4)), Cluster1 = presCluster1, Cluster2 = presCluster2)
 pander(ABDF)
 ```
 
@@ -525,3 +526,29 @@ Methods
   Subgrouping Analysis
   
     Following the identification of a potential subgrouping within the Alicante Bouschet cultivar, the Graphical Assessment and Surprising Observation Analysis methods were applied to the Alicante Bouschet samples, with samples T22 to T26 categorised as "Cluster 2" and the rest as "Cluster 1." PC4 and PC5 needed to be excluded from this analysis, as the Mahalanobis distance cannot be meaningfully calculated unless the number of datapoints used to calculate the covariance matrix exceeds the number of variables being considered by at least 2 {citation}. For each sample, the Mahalanobis distance was calculated from each theorised cluster, and the p-value obtained.
+    
+    
+Results Writeup
+  
+  Principal Component Analysis
+  
+    A Scree plot of the Principal Components (PCs) showed possible elbow points at PC2 and PC4, while the first five PCs each retained variance greater than 1 {figure scree}. We retained the first five PCs, which collectively retained 90.9% of the sample variance {table PCs}.
+    
+  Normality Assessment
+  
+    Shapiro-Wilk tests on the derived PCs showed sufficient evidence to claim that PC1 (p=.0001) and PC5 (p=.01) were not normally distributed across the overall dataset. When assessed within each cultivar, both of these PCs appeared to follow a normal distribution, but PC2 did not appear to show a normal distribution within the Mencia (p=.0161) or Alicante Bouschet (p=.0095) cultivars {table Shapiro}.
+    
+  Graphical Assessment
+  
+    PC1 and PC2 for the whole dataset are plotted on {table fullscatter}. The separation by cultivar observed by {revilla et al} is clearly replicated here. Samples M16 and M17 are noted as probable outliers within the Mencia cultivar, but there does not appear to be any indication of subgroupings within the Mencia samples. The Alicante Bouschet Samples, however, show a clear separation, with four samples diverging from the rest along PC2. Sample T22 also appears to be an outlier relative to the comparatively very tight clustering of T21 and T27-T30.
+    
+  Surprising Observations Analysis
+  
+    Under the assumption that all samples share an underlying multivariate normal distribution, sample M8 is a significant outlier (p=.0096), while samples M17 (p=.0747) and T23 (p=.0987) are slightly but not severely deviant from the assumed distribution {table mahalfull}. When each cultivar is assumed to form a separate multivariate normal distribution, however, there are no strong outliers and three slightly surprising samples: M7 (p=.0732), M8  (p=.0583), and M17(p=.0579) {table mahalfull}. This lends moderate additional evidence to the claim that the variables measured by {revilla et al} can reliably separate wine samples of these two cultivars. More compellingly, we see that every sample is highly inconsistent with the distribution of the opposing cultivar (p=.0057 for sample T25, p<.0001 for all other samples) {table mahalfull}, hence it is very unlikely that samples of either of these cultivars could be mistakenly categorised as belonging to the other cultivar when these measurements are known.
+    The final column of {table mahalfull} shows the p-value of the sample's Mahalanobis distance to the distribution of its cultivar, when the sample itself is excluded from calculating the distribution. Using this method, two of the Mencia samples appear slightly surprising: M16 (p=.0847) and M19 (p=.0811), one is surprising: M6 (p=.0367), and three are very surprising: M7 (p=.0002), M8 (p<.0001) and M17 (p<.0001). Within the Alicante Bouschet cultivar, however, samples T22-T26 all become very surprising (p=.0002 for T24, p<.0001 for all others). This is consistent with these observations belonging to a separate distribution with greater variance, so the following analyses will focus on testing whether these five observations can sensibly be categorised as a separate cluster from samples T21 and T27-T30.
+    
+  Subgrouping Analysis
+  
+    For the following analyses, samples T21 and T27-T30 are labelled as "Cluster 1" and samples T22-T26 are labelled "Cluster 2." PC4 and PC5 were dropped for these analyses, since the Mahalanobis distance cannot be meaningfully calculated for a cluster of five observations with more than three variables {citation}. Collectively, these three PCs retain 79.7% of the sample variance {table PCs}.
+    Visual assessment of {scatterplot} indicates no overlap between Cluster 1 and Cluster 2, though Cluster 1 shows much tighter grouping than Cluster 2 and sample T22 has a PC2 value much more consistent with Cluster 1 than Cluster 2.
+    The Mahalanobis distances strongly indicate intra-cluster cohesion and inter-cluster separation, as all samples are highly consistent with the distribution of their theorised cluster (p>=.2019 for all samples) and highly inconsistent with the distribution of the other theorised cluster (p<.0001 for all samples) {table cluster}. If the samples in Cluster 2 were simply random outliers of Cluster 1, we would expect the Cluster 1 samples to be consistent with the Cluster 2 distribution. Since this is not the case, we have evidence that these are two distinct categories of samples with separate distributions.

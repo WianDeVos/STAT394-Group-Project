@@ -373,14 +373,28 @@ bind_rows(
   knitr::kable()
 ```
 
+### Principal Component Analysis \[unfinished\]
+
+A Scree plot of the Principal Components (PCs) showed possible elbow points at PC2 and PC4, while the first five PCs each retained variance greater than 1 @fig-scree-R . We retained the first five PCs, which collectively retained 90.9% of the sample variance.
+
 ```{r}
+#| label: fig-scree-R
+#| tbl-cap: "Scree plot of PCA on full dataset."
+
 # PCA
 PCs = prcomp(wineDataVariables, center = TRUE, scale = TRUE)
 screeplot(PCs,type = "lines") +
   abline(h=1, col="red")
 ```
 
+### Normality Assessment \[unfinished\]
+
+Shapiro-Wilk tests on the derived PCs showed sufficient evidence to claim that PC1 (p=.0001) and PC5 (p=.01) were not normally distributed across the overall dataset. When assessed within each cultivar, both of these PCs appeared to follow a normal distribution, but PC2 did not appear to show a normal distribution within the Mencia (p=.0161) or Alicante Bouschet (p=.0095) cultivars @fig-shap-R .
+
 ```{r}
+#| label: fig-shap-R
+#| tbl-cap: "Shapiro-Wilk testing of PCs in aggregate and by cultivar."
+
 # Shapiro-Wilk test of PC1-5 aggregate and by cultivar
 library(pander)
 aggShap = rep(NA,5)
@@ -406,7 +420,14 @@ for(i in 1:5){
 pander(shapDF)
 ```
 
+### Graphical Assessment \[unfinished\]
+
+PC1 and PC2 for the whole dataset are plotted on @fig-fullscatter-R . The separation by cultivar observed by @revilla2016 is clearly replicated here. Samples M16 and M17 are noted as probable outliers within the Mencia cultivar, but there does not appear to be any indication of subgroupings within the Mencia samples. The Alicante Bouschet Samples, however, show a clear separation, with four samples diverging from the rest along PC2. Sample T22 also appears to be an outlier relative to the comparatively very tight clustering of T21 and T27-T30.
+
 ```{r}
+#| label: fig-fullscatter-R
+#| tbl-cap: "Scatter plot of PC1 vs PC2 on full dataset."
+
 # graphical of PCs, full dataset
 plot(wineDataPCADF$PC1,
      wineDataPCADF$PC2,
@@ -414,7 +435,16 @@ plot(wineDataPCADF$PC1,
      lwd = 3) + text(wineDataPCADF$PC1+0.1, wineDataPCADF$PC2-0.2, wineData$Sample, cex = 0.5)
 ```
 
+### Surprising Observations Analysis \[unfinished\]
+
+Under the assumption that all samples share an underlying multivariate normal distribution, sample M8 is a significant outlier (p=.0096), while samples M17 (p=.0747) and T23 (p=.0987) are slightly but not severely deviant from the assumed distribution @tbl-mahalfull-R . When each cultivar is assumed to form a separate multivariate normal distribution, however, there are no strong outliers and three slightly surprising samples: M7 (p=.0732), M8 (p=.0583), and M17(p=.0579). This lends moderate additional evidence to the claim that the variables measured by @revilla2016 can reliably separate wine samples of these two cultivars. More compellingly, we see that every sample is highly inconsistent with the distribution of the opposing cultivar (p=.0057 for sample T25, p\<.0001 for all other samples), hence it is very unlikely that samples of either of these cultivars could be mistakenly categorised as belonging to the other cultivar when these measurements are known.
+
+The final column of @tbl-mahalfull-R shows the p-value of the sample's Mahalanobis distance to the distribution of its cultivar, when the sample itself is excluded from calculating the distribution. Using this method, two of the Mencia samples appear slightly surprising: M16 (p=.0847) and M19 (p=.0811), one is surprising: M6 (p=.0367), and three are very surprising: M7 (p=.0002), M8 (p\<.0001) and M17 (p\<.0001). Within the Alicante Bouschet cultivar, however, samples T22-T26 all become very surprising (p=.0002 for T24, p\<.0001 for all others). This is consistent with these observations belonging to a separate distribution with greater variance, so the following analyses will focus on testing whether these five observations can sensibly be categorised as a separate cluster from samples T21 and T27-T30.
+
 ```{r}
+#| label: tbl-mahalfull-R
+#| tbl-cap: "Consistency of observations with theorised distributions."
+
 # surprising results for mahalanobis: full model, cultivar split, cultivar split with exclusion
 presFullModel = rep(NA,30)
 presMenInc = rep(NA,30)
@@ -497,7 +527,19 @@ colnames(mahalTable) = c("Sample","Full Dataset","Mencia","Alicante Bouschet","C
 pander(mahalTable)
 ```
 
+### Subgrouping Analysis \[unfinished\]
+
+For the following analyses, samples T21 and T27-T30 are labelled as "Cluster 1" and samples T22-T26 are labelled "Cluster 2." PC4 and PC5 were dropped for these analyses, since the Mahalanobis distance cannot be meaningfully calculated for a cluster of five observations with more than three variables @pires2024 . Collectively, these three PCs retain 79.7% of the sample variance {table PCs}.
+
+Visual assessment of @fig-scatterAB-R indicates no overlap between Cluster 1 and Cluster 2, though Cluster 1 shows much tighter grouping than Cluster 2 and sample T22 has a PC2 value much more consistent with Cluster 1 than Cluster 2.
+
+The Mahalanobis distances strongly indicate intra-cluster cohesion and inter-cluster separation, as all samples are highly consistent with the distribution of their theorised cluster (p\>=.2019 for all samples) and highly inconsistent with the distribution of the other theorised cluster (p\<.0001 for all samples) @tbl-mahalAB-R . If the samples in Cluster 2 were simply random outliers of Cluster 1, we would expect the Cluster 1 samples to be consistent with the Cluster 2 distribution. Since this is not the case, we have evidence that these are two distinct categories of samples with separate distributions.
+
 ```{r}
+#| label: fig-scatterAB-R
+#| tbl-cap: "Scatter plot of PC1 vs PC2 within Alicante Bouschet samples."
+
+
 # graph PC1-2 AB split
 plot(wineDataPCADFR[21:30,]$PC1,
      wineDataPCADFR[21:30,]$PC2,
@@ -506,6 +548,10 @@ plot(wineDataPCADFR[21:30,]$PC1,
 ```
 
 ```{r}
+#| label: tbl-mahalAB-R
+#| tbl-cap: "Consistency of Alicante Bouschet samples with theorised clusters."
+
+
 # mahalanobis AB PC1-3 without exclusion
 presCluster1 = rep(NA,10)
 presCluster2 = rep(NA,10)
