@@ -175,6 +175,8 @@ Acylation distinguishes the cultivars through its pattern rather than its extent
 
 ### Graphical analysis {#sec-graphical}
 
+Having examined each variable as a uni-variate case in @sec-descriptive, the next logical step is considering how these 23 variables relate with each other. This matters decriptively as it answers questions like, do variables measuring related wine chemistry move together as we would expect? This has important methodologically consequences, since high correlation between variables limits the effective dimensional of the dataset and motivates the use of PCA or other dimensionality reduction.
+
 ```{r}
 #| label: fig-correlation-heatmap
 #| fig-cap: "Pairwise Pearson correlations among the 23 phenolic variables."
@@ -195,29 +197,17 @@ wine |>
     colors = c("blue", "white", "red"),
     legend.title = "Corr"
   )
+
+n_total <- nrow(cor_pairs)
+n_strong <- cor_pairs |> filter(abs(r) > 0.8) |> nrow()
+
+n_strong
+n_strong / n_total
 ```
 
-COULD POTENTIALLY CUT THIS KIND OF REDUNDANT /
-
-```{r Univariate Distributions}
-#| label: fig-Univariate-distributions
-#| fig-cap: "Univariate Distributions, by Cultivar"
-
-wine |>
-  pivot_longer(where(is.numeric), names_to = "Variable", values_to = "value") |>
-  ggplot(aes(value, fill = Cultivar)) +
-  geom_histogram(aes(y = after_stat(density)), alpha = 0.5, bins = 12, position = "identity") +
-  facet_wrap(~Variable, scales = "free") +
-  theme_minimal(base_size = 10)
-```
-
-histograms / density plots with normal overlay
-
-correlation heat map --\> can help show why we need PCA.
+The correlation heatmap (@fig-correlation-heatmap) shows several near identical measurements. 'Tot_Anthocyanins' and 'Tot_Anthocyans' correlate at r = 0.998 and the colour/phenolic index variables ('Col_Int_420_520', 'Col_Int_420_520_620', 'Tot_Phen_Ind') all correlate at above 0.94 with one another. This is consistent  with being derived from closely related measurements. The monoglucoside proportions also correlate with one another with an absolute r correlation coefficient of 0.95 for several pairs like 'MvGl' and 'PnGl' this is expected for pairs of compositional variables whose relative shares are constrained to sum to 100% of monoglucoside. There were 51 pairs out of all possible 2 variable combinations with an absolute value of r > 0.8, which as a percentage is 20.16% (2dp) of all combinations. This is a relatively high percentage of total pairs and means there is substantial redundancy amongst the 23 variables.  
 
 ### Assessing multivariate normality {#sec-normality}
-
-PLAN: MVN means Univariate normality per variable (testing each variables normality) since we only have 30 observations (n \< 50) Ill use shapiro-wilk for normality
 
 ```{r}
 #| label: tbl-shapiro-univariate
@@ -241,10 +231,6 @@ wine |>
   rename(Variable = variable, W = statistic, `p-value` = p) |>
   arrange(`p-value`) |>
   knitr::kable()
-```
-
-```{r}
-
 ```
 
 Splitting by cultivar clears up some of pooled sample results for "Tot_Anthocyanins" and "Tot_Anthocyans", both strongly non-normal pooled with extremely small p-values, but are fine within the Alicante Bouschet Cultivar. This suggests a gap from @sec-descriptive creating an artificial mixture effect, not real non-normality
