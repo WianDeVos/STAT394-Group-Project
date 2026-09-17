@@ -1,5 +1,10 @@
 ---
 title: "Group report"
+author:
+  - name: "Riley Phillips"
+  - name: "Wian de Vos"
+  - name: "Oliver Temel"
+  - name: "Simon Nelson"
 format:
   typst:
     number-sections: true
@@ -613,7 +618,7 @@ The analysis set out to describe the phenolic profiles of 30 AOC Valdeorras red 
 
 **Multivariate normality.** The correlation and univariate normality analyses (@sec-graphical, @sec-normality) show both that the raw phenolic variables are highly redundant, with 51 of 253 pairs correlating at \|r\| \> 0.8, and that several variables were non-normally distributed even on a within-cultivar level. 12 of the 42 within-cultivar Shapiro-Wilk tests rejected normality. These were concentrated within the Mencía cultivar (9 out of 12) and the coumaroylated anthocyanin derivatives of both cultivars. Since marginal normality is necessary for multivariate normality, we concluded neither cultivar’s phenolic profile is well approximated by a multivariate normal distribution on the raw variable scale. This, as well as the singular covariance matrices resulting from too many variables being assessed relative to the sample size, motivated the use of Principle Component Analysis throughout the remaining analysis. We were thereby able to work in a reduced space where the normality assumption is defensible. The pooled PCA scores (@tbl-shapiro-pca) were largely consistent with normality, with the exception of PC1 and PC5 overall and PC2 within each cultivar.
 
-**Cultivar Separation.** Consistent with \[@revilla2016\], we found that a PC1-PC2 scatterplot of the overall dataset (@fig-fullscatter-R) shows a clear separation between Mencía and Alicante Bouschet samples. This is reinforced by the Mahalanobis distance analysis (@tbl-mahalfull-R), which showed that every sample is highly inconsistent with the distribution of the opposing cultivar (p \< 0.0001 for all but one sample), while within-cultivar Mahalanobis distances flag only a small number of mildly unusual wines (M7, M8 and M17). This reinforces that the phenolic measurements analysed here can reliably distinguish between the 2 cultivars.
+**Cultivar Separation.** Consistent with [@revilla2016], we found that a PC1-PC2 scatterplot of the overall dataset (@fig-fullscatter-R) shows a clear separation between Mencía and Alicante Bouschet samples. This is reinforced by the Mahalanobis distance analysis (@tbl-mahalfull-R), which showed that every sample is highly inconsistent with the distribution of the opposing cultivar (p \< 0.0001 for all but one sample), while within-cultivar Mahalanobis distances flag only a small number of mildly unusual wines (M7, M8 and M17). This reinforces that the phenolic measurements analysed here can reliably distinguish between the 2 cultivars.
 
 **The sub-group structure within Alicante Bouschet.** The most notable finding to emerge beyond Revilla *et al.*'s original analysis [@revilla2016] is a clear internal split within the Alicante Bouschet samples. The PC1-PC2 scatterplot restricted to this cultivar (@fig-scatterAB-R) shows a tight clustering of samples T21 and T27-T30, while samples T22-T26 strongly diverge from this grouping. This separation is not a marginal effect: the Mahalanobis distance analysis (@tbl-mahalAB-R) shows every sample is highly consistent with its own theorised cluster (p ≥ 0.202) and highly inconsistent with the other cluster (p \< 0.0001 in every case). This is not consistent with samples T22-T26 being random outliers, since we would then expect the Cluster 1 samples to be largely consistent with the distribution of Cluster 2. The fact that the inconsistency is mutual lends credence to the claim that these are separate distributions.
 
