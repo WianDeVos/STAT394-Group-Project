@@ -198,14 +198,14 @@ wine |>
     legend.title = "Corr"
   )
 
-n_total <- nrow(cor_pairs)
-n_strong <- cor_pairs |> filter(abs(r) > 0.8) |> nrow()
-
-n_strong
-n_strong / n_total
+# n_total <- nrow(cor_pairs)
+# n_strong <- cor_pairs |> filter(abs(r) > 0.8) |> nrow()
+# 
+# n_strong
+# n_strong / n_total
 ```
 
-The correlation heatmap (@fig-correlation-heatmap) shows several near identical measurements. 'Tot_Anthocyanins' and 'Tot_Anthocyans' correlate at r = 0.998 and the colour/phenolic index variables ('Col_Int_420_520', 'Col_Int_420_520_620', 'Tot_Phen_Ind') all correlate at above 0.94 with one another. This is consistent  with being derived from closely related measurements. The monoglucoside proportions also correlate with one another with an absolute r correlation coefficient of 0.95 for several pairs like 'MvGl' and 'PnGl' this is expected for pairs of compositional variables whose relative shares are constrained to sum to 100% of monoglucoside. There were 51 pairs out of all possible 2 variable combinations with an absolute value of r > 0.8, which as a percentage is 20.16% (2dp) of all combinations. This is a relatively high percentage of total pairs and means there is substantial redundancy amongst the 23 variables.  
+The correlation heatmap (@fig-correlation-heatmap) shows several near identical measurements. 'Tot_Anthocyanins' and 'Tot_Anthocyans' correlate at r = 0.998 and the colour/phenolic index variables ('Col_Int_420_520', 'Col_Int_420_520_620', 'Tot_Phen_Ind') all correlate at above 0.94 with one another. This is consistent with being derived from closely related measurements. The monoglucoside proportions also correlate with one another with an absolute r correlation coefficient of 0.95 for several pairs like 'MvGl' and 'PnGl' this is expected for pairs of compositional variables whose relative shares are constrained to sum to 100% of monoglucoside. There were 51 pairs out of all possible 2 variable combinations with an absolute value of r \> 0.8, which as a percentage is 20.16% (2dp) of all combinations. This is a relatively high percentage of total pairs and means there is substantial redundancy amongst the 23 variables.
 
 ### Assessing multivariate normality {#sec-normality}
 
@@ -375,24 +375,31 @@ bind_rows(
 
 ### Principal Component Analysis \[unfinished\]
 
-A Scree plot of the Principal Components (PCs) showed possible elbow points at PC2 and PC4, while the first five PCs each retained variance greater than 1 @fig-scree-R . We retained the first five PCs, which collectively retained 90.9% of the sample variance.
+A Scree plot of the Principal Components (PCs) showed possible elbow points at PC2 and PC4, while the first five PCs each retained variance greater than 1 @tbl-scree-R . We retained the first five PCs, which collectively retained 90.9% of the sample variance.
 
 ```{r}
-#| label: fig-scree-R
-#| tbl-cap: "Scree plot of PCA on full dataset."
+#| label: tbl-scree-R
+#| tbl-cap: "Variance and retained sample variance of PC1-PC6."
 
-# PCA
+#summary table of PCs
+library(pander)
+wineDataVariables = as.data.frame(wine)[,3:25]
 PCs = prcomp(wineDataVariables, center = TRUE, scale = TRUE)
-screeplot(PCs,type = "lines") +
-  abline(h=1, col="red")
+summ = summary(PCs)
+SDs = summ$importance[1,]
+cumVar = summ$importance[3,]
+PCtable = data.frame(PC = colnames(summ$importance)[1:6], SD = SDs[1:6], Cvar = cumVar[1:6])
+rownames(PCtable) = NULL
+colnames(PCtable)[3] = "Cumulative Variance"
+pander(PCtable)
 ```
 
 ### Normality Assessment \[unfinished\]
 
-Shapiro-Wilk tests on the derived PCs showed sufficient evidence to claim that PC1 (p=.0001) and PC5 (p=.01) were not normally distributed across the overall dataset. When assessed within each cultivar, both of these PCs appeared to follow a normal distribution, but PC2 did not appear to show a normal distribution within the Mencia (p=.0161) or Alicante Bouschet (p=.0095) cultivars @fig-shap-R .
+Shapiro-Wilk tests on the derived PCs showed sufficient evidence to claim that PC1 (p=.0001) and PC5 (p=.01) were not normally distributed across the overall dataset. When assessed within each cultivar, both of these PCs appeared to follow a normal distribution, but PC2 did not appear to show a normal distribution within the Mencia (p=.0161) or Alicante Bouschet (p=.0095) cultivars @tbl-shap-R .
 
 ```{r}
-#| label: fig-shap-R
+#| label: tbl-shap-R
 #| tbl-cap: "Shapiro-Wilk testing of PCs in aggregate and by cultivar."
 
 # Shapiro-Wilk test of PC1-5 aggregate and by cultivar
@@ -426,13 +433,18 @@ PC1 and PC2 for the whole dataset are plotted on @fig-fullscatter-R . The separa
 
 ```{r}
 #| label: fig-fullscatter-R
-#| tbl-cap: "Scatter plot of PC1 vs PC2 on full dataset."
+#| fig-cap: "Scatter plot of PC1 vs PC2 on full dataset."
+#| results: hide
 
 # graphical of PCs, full dataset
 plot(wineDataPCADF$PC1,
      wineDataPCADF$PC2,
      col = c(rep("red",20),rep("blue",10)),
-     lwd = 3) + text(wineDataPCADF$PC1+0.1, wineDataPCADF$PC2-0.2, wineData$Sample, cex = 0.5)
+     lwd = 3,
+     xlab = "PC1",
+     ylab = "PC2",
+     main = "Distribution of PC1 and PC2 Across Full Dataset") + 
+  text(wineDataPCADF$PC1+0.1, wineDataPCADF$PC2-0.2, wineData$Sample, cex = 0.5)
 ```
 
 ### Surprising Observations Analysis \[unfinished\]
