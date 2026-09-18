@@ -542,7 +542,7 @@ for(i in 1:30){
 }
 mahalTable = data.frame(sample = wineData$Sample, fullModel = presFullModel, menciaInc = presMenInc, abInc = presABInc, splitExc = presSplitExc)
 mahalTable$splitExc = gsub("2e-04","0.0002",mahalTable$splitExc)
-colnames(mahalTable) = c("Sample","Full Dataset","Mencia","Alicante Bouschet","Cultivar Excluding Sample")
+colnames(mahalTable) = c("Sample","Full","Mencia","A. Bouschet","Exclusion")
 pander(mahalTable)
 ```
 
