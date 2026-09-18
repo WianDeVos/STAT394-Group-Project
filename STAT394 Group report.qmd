@@ -434,16 +434,24 @@ PC1 and PC2 for the whole dataset are plotted on @fig-fullscatter-R . The separa
 #| label: fig-fullscatter-R
 #| fig-cap: "Scatter plot of PC1 vs PC2 on full dataset."
 #| results: hide
+#| fig-height: 4
 
 # graphical of PCs, full dataset
 plot(wineDataPCADF$PC1,
      wineDataPCADF$PC2,
+     pch = 21,
+     bg = c(rep("red",20),rep("blue",10)),
      col = c(rep("red",20),rep("blue",10)),
-     lwd = 3,
+     ylim = c(-4,4),
      xlab = "PC1",
-     ylab = "PC2",
-     main = "Distribution of PC1 and PC2 Across Full Dataset") + 
-  text(wineDataPCADF$PC1+0.1, wineDataPCADF$PC2-0.2, wineData$Sample, cex = 0.5)
+     ylab = "PC2")
+  text(wineDataPCADF$PC1+0.1, wineDataPCADF$PC2-0.3, wineData$Sample, cex = 0.5)
+  legend("topleft",
+         legend=c("Mencia","Alicante Bouschet"),
+         col = c("red","blue"),
+         pch = 21,
+         pt.bg = c("red","blue"),
+         cex = 0.8)
 ```
 
 ### Surprising Observations Analysis \[unfinished\]
