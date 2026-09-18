@@ -1,5 +1,5 @@
 ---
-title: "Group report"
+title: "STAT394 Group Report: Early indications of subtyping within Alicante Bouschet wines from AOC Valdeorras (Galicia, Spain)"
 author:
   - name: "Riley Phillips"
   - name: "Wian de Vos"
@@ -426,7 +426,7 @@ for(i in 1:5){
 pander(shapDF)
 ```
 
-### Graphical Assessment \[unfinished\]
+### Graphical Assessment
 
 PC1 and PC2 for the whole dataset are plotted on @fig-fullscatter-R . The separation by cultivar observed by [@revilla2016] is clearly replicated here. Samples M16 and M17 are noted as probable outliers within the Mencia cultivar, but there does not appear to be any indication of subgroupings within the Mencia samples. The Alicante Bouschet Samples, however, show a clear separation, with four samples diverging from the rest along PC2. Sample T22 also appears to be an outlier relative to the comparatively very tight clustering of T21 and T27-T30.
 
@@ -556,14 +556,30 @@ The Mahalanobis distances strongly indicate intra-cluster cohesion and inter-clu
 
 ```{r}
 #| label: fig-scatterAB-R
-#| tbl-cap: "Scatter plot of PC1 vs PC2 within Alicante Bouschet samples."
+#| fig-cap: "Scatter plot of PC1 vs PC2 within Alicante Bouschet samples."
+#| results: hide
+#| fig-height: 4
 
 
 # graph PC1-2 AB split
 plot(wineDataPCADFR[21:30,]$PC1,
      wineDataPCADFR[21:30,]$PC2,
      col = c("green",rep("black",5),rep("green",4)),
-     pch = as.character(c(1:9,0)))
+     pch = 21,
+     bg = c("green",rep("black",5),rep("green",4)),
+     ylim = c(-4,4),
+     xlab = "PC1",
+     ylab = "PC2") 
+  text(wineDataPCADFR[21:30,]$PC1+0.1,
+     wineDataPCADFR[21:30,]$PC2-0.3,
+     wineData$Sample[21:30],
+     cex=0.5) 
+  legend("topright",
+       legend = c("Cluster 1", "Cluster 2"),
+       col = c("green","black"),
+       pch = 21,
+       pt.bg = c("green","black"),
+       cex=0.8)
 ```
 
 ```{r}
