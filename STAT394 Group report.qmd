@@ -31,7 +31,7 @@ Our aim is to expand on Revilla *et al.*'s analysis by looking at all 23 of thei
 
 #### Data Assembly
 
-The quantitative data reported in Tables 1, 2, 5 and 6 from a .docx copy of [@revilla2016] using the docxtractr package [@docxtractr] in R version 4.4.2 [@Rlanguage], and combined into a single data frame.
+The quantitative data reported in Tables 1, 2, 5 and 6 were extracted from a .docx copy of [@revilla2016] using the docxtractr package [@docxtractr] in R version 4.4.2 [@Rlanguage], and combined into a single data frame.
 
 #### Statistical Analyses
 
@@ -64,7 +64,7 @@ The resulting data frame contains 30 wines (20 Mencía, 10 Alicante Bouschet) an
 
 #### Principal Component Analysis
 
-Principal Component Analysis (PCA) was performed on the dataset extracted from \[@revilla2016\] for the purpose of dimensionality reduction. Principal Components were derived from the full dataset, not from subgroupings of observations. Principal Components with retained variance greater than 1 were kept for use in analysis, and the rest discarded.
+Principal Component Analysis (PCA) was performed on the dataset extracted from [@revilla2016] for the purpose of dimensionality reduction. Principal Components were derived from the full dataset, not from subgroupings of observations. Principal Components with retained variance greater than 1 were kept for use in analysis, and the rest discarded.
 
 #### Normality Assessment
 
@@ -282,7 +282,7 @@ for(i in 1:5){
                                       charTemp)))
   }
 }
-shapDF[1,2] = ".0001 ***"
+shapDF[1,2] = "0.0001 ***"
 pander(shapDF)
 ```
 
