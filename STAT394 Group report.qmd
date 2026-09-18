@@ -19,7 +19,7 @@ execute:
 
 ## Introduction {#sec-introduction}
 
-The taste, colour, and astringency of red wine, qualities of great importance to winemakers, sellers, and enjoyers, are governed by phenolic compounds, particularly anthocyanins and flavanols [@Cheynier298]. The phenolic composition of wines is affected by winemaking practices, but it is also heavily dependent on the variety of grape used, the location it was grown, and the weather it was exposed to while growing [@Kumsta2014, @Oliveira2020]. Hence, the cultivar, origin, and year of a wine are all markers of quality and can be advertised to increase the wine's sell value. For this reason, it is of great interest to winemakers and regulators to be able to identify wines that market themselves fraudulently. This is commonly assessed using physicochemical measures, testing the absorbance of different light wavelengths to determine the concentration of different families of compounds such as anthocyanins or tannins in the wine (UV-Vis spectrophotometry). However, it is also possible to assess the proportions of specific anthocyanin compounds in the wine, the "anthocyanin fingerprint," and this has proven to be a reliable way of identifying grape cultivars used in wine [@Kumsta2014, @revilla2016].
+The taste, colour, and astringency of red wine, qualities of great importance to winemakers, sellers, and enjoyers, are governed by phenolic compounds, particularly anthocyanins and flavanols [@Cheynier298]. The phenolic composition of wines is affected by winemaking practices, but it is also heavily dependent on the variety of grape used, the location it was grown, and the weather it was exposed to while growing [@Kumsta2014; @Oliveira2020]. Hence, the cultivar, origin, and year of a wine are all markers of quality and can be advertised to increase the wine's sell value. For this reason, it is of great interest to winemakers and regulators to be able to identify wines that market themselves fraudulently. This is commonly assessed using physicochemical measures, testing the absorbance of different light wavelengths to determine the concentration of different families of compounds such as anthocyanins or tannins in the wine (UV-Vis spectrophotometry). However, it is also possible to assess the proportions of specific anthocyanin compounds in the wine, the "anthocyanin fingerprint," and this has proven to be a reliable way of identifying grape cultivars used in wine [@Kumsta2014; @revilla2016].
 
 The phenolic composition of wines made from two grape cultivars in the Appellation d'Origine Contrôlée (AOC) Valdeorras region (Galicia, NW Spain) was studied by Revilla *et al.* [@revilla2016]. They compared wines from Mencia grapes - the principal red cultivar in the region - with Alicante Bouschet, a teinturier cultivar with red-pigmented flesh that is often blended with Mencia to boost colour [@revilla2016]. Thirty wines from the 2014 vintage (20 Mencía, 10 Alicante Bouschet) were analysed after malolactic fermentation using UV-Vis spectrophotometry to quantify total phenols, colour intensity, hue, chemical age and tannin- and anthocyanin-related indices, and using HPLC-DAD to determine the relative proportions of 14 individual anthocyanins (5 monoglucosides and 9 acylated derivatives). The authors used Principal Component Analysis (PCA) and Linear Discriminant Analysis on each variable block separately and found that both effectively separated the two cultivars.
 
@@ -39,9 +39,7 @@ Data were extracted from a .docx copy of [@revilla2016] using the docxtractor pa
 
 #### Statistical Analyses
 
-All statistical analyses were carried out in R version 4.4.2 [@Rlanguage]. Functions from the base and stats packages were used for correlation analysis, principal component analysis and Mahalanobis distance calculations. The rstatix package was used for the Shapiro-Wilk normality tests.
-
-All statistical analyses were carried out using the base or stats packages of R version 4.4.2 [@Rlanguage].
+All statistical analyses were carried out in R version 4.4.2 [@Rlanguage]. Functions from the base and stats packages were used for correlation analysis, principal component analysis and Mahalanobis distance calculations. The rstatix package was used for the Shapiro-Wilk normality tests [@rstatix].
 
 #### Plots and Tables
 
@@ -49,7 +47,7 @@ Plots were created primarily using the ggplot2 package [@ggplot2] in R version 4
 
 ### Methods
 
-### Data assembly
+#### Data assembly
 
 We combined the quantitative data reported in Tables 1, 2, 5 and 6 of [@revilla2016] into a single data frame, using the sample labelling from the original tables (`M` = Mencía, `T` = Alicante Bouschet) to derive a `Cultivar` grouping variable.
 
@@ -250,124 +248,6 @@ wine |>
   labs(title = "Distributions of Variables Rejecting Univariate Normality")
 ```
 
-### Atypical observations {#sec-outliers}
-
-The atypicality of a datapoint relative to a group distribution is measured by the Mahalanobis distance. For this dataset, atypicality will be assessed based on distance from the distribution of the cultivar samples, not from the overall dataset. Unfortunately, the number of variables measured, 23, exceeds the sample size of either cultivar, resulting in a singular, non-invertible covariance matrix, making the calculation of the Mahalanobis distance impossible. As such, we will use Principal Component Analysis and remove the non-
-
-```{r}
-#| label: tbl-mahalanobis-pooled
-#| tbl-cap: "Mahalanobis distances and associated tail probabilities for all 30 wines, computed on the full set of 23 phenolic variables."
-
-wineData <- as.data.frame(wine)
-wineDataVariables <- wineData[, 3:25]
-
-wineData$mahalanobis <- mahalanobis(
-  wineDataVariables,
-  center = colMeans(wineDataVariables),
-  cov = cov(wineDataVariables)
-)
-wineData$surprise <- pchisq(wineData$mahalanobis, df = 23, lower.tail = FALSE)
-
-wineData |>
-  select(Sample, Cultivar, mahalanobis, surprise) |>
-  mutate(
-    mahalanobis = round(mahalanobis, 2),
-    surprise = round(surprise, 4)
-  ) |>
-  rename(Wine = Sample, `Mahalanobis distance` = mahalanobis, `Tail probability` = surprise) |>
-  arrange(desc(`Mahalanobis distance`)) |>
-  knitr::kable()
-```
-
-```{r}
-#| label: tbl-shapiro-pca
-#| tbl-cap: "Shapiro-Wilk tests of normality applied to each principal component."
-
-winePCA <- prcomp(wineDataVariables, center = TRUE, scale = TRUE)
-wineDataPCADF <- as.data.frame(winePCA$x)
-
-tibble(
-  Component = colnames(wineDataPCADF),
-  W = sapply(wineDataPCADF, \(x) shapiro.test(x)$statistic),
-  `p-value` = sapply(wineDataPCADF, \(x) shapiro.test(x)$p.value)
-) |>
-  mutate(W = round(W, 3), `p-value` = round(`p-value`, 5)) |>
-  knitr::kable()
-```
-
-```{r}
-#| label: tbl-group-rank
-#| tbl-cap: "Sample size, number of variables, and covariance matrix rank for each cultivar."
-
-menciaData   <- wineData[wineData$Cultivar == "Mencia", 3:25]
-alicanteData <- wineData[wineData$Cultivar == "Alicante Bouschet", 3:25]
-
-tibble(
-  Cultivar = c("Mencia", "Alicante Bouschet"),
-  n = c(nrow(menciaData), nrow(alicanteData)),
-  p = c(ncol(menciaData), ncol(alicanteData)),
-  `Max rank (n-1)` = n - 1,
-  `Covariance rank` = c(qr(cov(menciaData))$rank, qr(cov(alicanteData))$rank)
-) |>
-  knitr::kable()
-```
-
-Within-cultivar Mahalanobis distances cannot be computed on the full variable set. The covariance matrix of a group of $n$ observations has rank at most $n-1$, so with 20 Mencía and 10 Alicante Bouschet wines against 23 variables, both within-group covariance matrices are singular and cannot be inverted (@tbl-group-rank). We therefore restrict the within-group analysis to the leading principal components of each cultivar, retaining enough components that the covariance matrix is of full rank.
-
-```{r}
-#| label: fig-scree-groups
-#| fig-cap: "Proportion of variance explained by each principal component, computed separately within each cultivar."
-#| fig-width: 7
-#| fig-height: 4
-
-scree_data <- function(dat, cultivar) {
-  p <- prcomp(dat, center = TRUE, scale. = TRUE)
-  tibble(
-    Cultivar = cultivar,
-    PC = seq_along(p$sdev),
-    Proportion = p$sdev^2 / sum(p$sdev^2)
-  )
-}
-
-bind_rows(
-  scree_data(menciaData, "Mencia"),
-  scree_data(alicanteData, "Alicante Bouschet")
-) |>
-  filter(PC <= 10) |>
-  ggplot(aes(PC, Proportion)) +
-  geom_col(fill = "grey40") +
-  facet_wrap(~Cultivar) +
-  scale_x_continuous(breaks = 1:10) +
-  labs(x = "Principal component", y = "Proportion of variance explained") +
-  theme_minimal()
-```
-
-```{r}
-#| label: tbl-mahalanobis-groupwise
-#| tbl-cap: "Within-cultivar Mahalanobis distances computed on the leading principal components of each group."
-
-pca_mahal <- function(dat, k) {
-  scores <- prcomp(dat, center = TRUE, scale. = TRUE)$x[, 1:k, drop = FALSE]
-  mahalanobis(scores, center = colMeans(scores), cov = cov(scores))
-}
-
-bind_rows(
-  tibble(
-    Wine = wineData$Sample[wineData$Cultivar == "Mencia"],
-    Cultivar = "Mencia",
-    Distance = pca_mahal(menciaData, 2)
-  ),
-  tibble(
-    Wine = wineData$Sample[wineData$Cultivar == "Alicante Bouschet"],
-    Cultivar = "Alicante Bouschet",
-    Distance = pca_mahal(alicanteData, 3)
-  )
-) |>
-  mutate(Distance = round(Distance, 2)) |>
-  arrange(Cultivar, desc(Distance)) |>
-  knitr::kable()
-```
-
 ### Principal Component Analysis \[unfinished\]
 
 As seen in @tbl-scree-R, the first five PCs each retained variance greater than 1, meaning they each account for more of the sample variance than the average of the original variables. The first five PCs also collectively retain 90.9% of the sample variance, while being a small enough number of variables to easily work with. As such, we retained the first five PCs and discarded the rest.
@@ -452,9 +332,9 @@ plot(wineDataPCADF$PC1,
 
 ### Surprising Observations Analysis \[unfinished\]
 
-Under the assumption that all samples share an underlying multivariate normal distribution, sample M8 is a significant outlier (p=.0096), while samples M17 (p=.0747) and T23 (p=.0987) are slightly but not severely deviant from the assumed distribution (@tbl-mahalfull-R) . When each cultivar is assumed to form a separate multivariate normal distribution, however, there are no strong outliers and three slightly surprising samples: M7 (p=.0732), M8 (p=.0583), and M17(p=.0579). This lends moderate additional evidence to the claim that the variables measured by [@revilla2016] can reliably separate wine samples of these two cultivars. More compellingly, we see that every sample is highly inconsistent with the distribution of the opposing cultivar (p=.0057 for sample T25, p\<.0001 for all other samples), hence it is very unlikely that samples of either of these cultivars could be mistakenly categorised as belonging to the other cultivar when these measurements are known.
+Under the assumption that all samples share an underlying multivariate normal distribution, sample M8 is a significant outlier (p=.0096), while samples M17 (p=.0747) and T23 (p=.0987) are slightly but not severely deviant (@tbl-mahalfull-R) . When each cultivar is assumed to form a separate multivariate normal distribution, however, there are no strong outliers and three slightly surprising samples: M7 (p=.0732), M8 (p=.0583), and M17 (p=.0579). This lends moderate additional evidence to the claim that the variables measured by [@revilla2016] can reliably separate wine samples of these two cultivars. More compellingly, we see that every sample is highly inconsistent with the distribution of the opposing cultivar (p=.0057 for sample T25, p\<.0001 for all other samples), hence it is very unlikely that samples of either of these cultivars could be mistakenly categorised as belonging to the other cultivar when these measurements are known.
 
-The final column of @tbl-mahalfull-R shows the p-value of the sample's Mahalanobis distance to the distribution of its cultivar, when the sample itself is excluded from calculating the distribution. Using this method, two of the Mencia samples appear slightly surprising: M16 (p=.0847) and M19 (p=.0811), one is surprising: M6 (p=.0367), and three are very surprising: M7 (p=.0002), M8 (p\<.0001) and M17 (p\<.0001). Within the Alicante Bouschet cultivar, however, samples T22-T26 all become very surprising (p=.0002 for T24, p\<.0001 for all others). This is consistent with these observations belonging to a separate distribution with greater variance, so the following analyses will focus on testing whether these five observations can sensibly be categorised as a separate cluster from samples T21 and T27-T30.
+The final column of @tbl-mahalfull-R shows the p-value of the sample's Mahalanobis distance to the distribution of its cultivar, when the distribution is calculated excluding the sample itself. Using this method, two of the Mencia samples appear slightly surprising: M16 (p=.0847) and M19 (p=.0811), one is surprising: M6 (p=.0367), and three are very surprising: M7 (p=.0002), M8 (p\<.0001) and M17 (p\<.0001). Within the Alicante Bouschet cultivar, however, samples T22-T26 all become very surprising (p=.0002 for T24, p\<.0001 for all others). This is consistent with these observations belonging to a separate distribution with greater variance, so the following analyses will focus on testing whether these five observations can sensibly be categorised as a separate cluster from samples T21 and T27-T30.
 
 ```{r}
 #| label: tbl-mahalfull-R
@@ -544,7 +424,7 @@ pander(mahalTable)
 
 ### Subgrouping Analysis \[unfinished\]
 
-For the following analyses, samples T21 and T27-T30 are labelled as "Cluster 1" and samples T22-T26 are labelled "Cluster 2." PC4 and PC5 were dropped for these analyses, since the Mahalanobis distance cannot be meaningfully calculated for a cluster of five observations with more than three variables [@pires2024] . Collectively, these three PCs retain 79.7% of the sample variance {table PCs}.
+For the following analyses, samples T21 and T27-T30 are labelled as "Cluster 1" and samples T22-T26 are labelled "Cluster 2." PC4 and PC5 were dropped for these analyses, since the Mahalanobis distance cannot be meaningfully calculated for a cluster of five observations with more than three variables [@pires2024] . Collectively, these three PCs retain 79.7% of the sample variance (@tbl-scree-R).
 
 Visual assessment of @fig-scatterAB-R indicates no overlap between Cluster 1 and Cluster 2, though Cluster 1 shows much tighter grouping than Cluster 2 and sample T22 has a PC2 value much more consistent with Cluster 1 than Cluster 2.
 
