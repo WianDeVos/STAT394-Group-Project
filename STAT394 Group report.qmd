@@ -197,34 +197,54 @@ The correlation heatmap (@fig-correlation-heatmap) shows several near identical 
 ### Assessing multivariate normality {#sec-normality}
 
 ```{r}
-#| label: tbl-shapiro-univariate
-#| tbl-cap: "Shapiro-Wilk tests of univariate normality for each phenolic variable."
+#| label: tbl-shapiro-pooled
+#| tbl-cap: "Shapiro-Wilk tests of univariate normality for each phenolic variable, pooled across both cultivars."
 
 library(rstatix)
 
 wine |>
-  group_by(Cultivar) |>
-  shapiro_test(
-    Tot_Phen_Ind, Col_Int_420_520, Col_Int_420_520_620, Hue, Chem_Age_Ind,
-    Tot_Anthocyans, Tot_Anthocyanins, Col_Anthocyanins, Tot_Tannins,
-    DpGl, CyGl, PtGl, PnGl, MvGl,
-    DpGlAc, PtGlAc, PnGlAc, MvGlAc,
-    DpGlCm, PtGlCm, PnGlCm
-  ) |>
-  mutate(
-    statistic = round(statistic, 3),
-    p = round(p, 5)
-  ) |>
+  shapiro_test(Tot_Phen_Ind, Col_Int_420_520, Col_Int_420_520_620, Hue, Chem_Age_Ind,
+               Tot_Anthocyans, Tot_Anthocyanins, Col_Anthocyanins, Tot_Tannins,
+               DpGl, CyGl, PtGl, PnGl, MvGl,
+               DpGlAc, PtGlAc, PnGlAc, MvGlAc,
+               DpGlCm, PtGlCm, PnGlCm, MvGlCm, MvGlCf) |>
+  mutate(statistic = round(statistic, 3), p = round(p, 5)) |>
   rename(Variable = variable, W = statistic, `p-value` = p) |>
   arrange(`p-value`) |>
   knitr::kable()
 ```
 
-Splitting by cultivar clears up some of pooled sample results for "Tot_Anthocyanins" and "Tot_Anthocyans", both strongly non-normal pooled with extremely small p-values, but are fine within the Alicante Bouschet Cultivar. This suggests a gap from @sec-descriptive creating an artificial mixture effect, not real non-normality
+```{r}
+#| label: tbl-shapiro-rejections
+#| tbl-cap: "Variables rejecting univariate normality at the 5% level, tested separately within each cultivar."
 
-12 of 42 within-cultivar tests still reject at 5% significance, this is too many to be random as with 42 variables we would expect about 2 to reject by chance (42 \* 0.05 = 2.1). Mencia's total concentration variables are very poor "Tot_Anthocyanins", "Tot_Anthocyans" and coumaroylated derivatives are rejected for both cultivars "DpGICm" and "PnGICm" also in just mencia "PtGICm" which is already flagged before as the least consistent acylated compounds.
+bind_rows(
+  wine |> filter(Cultivar == "Mencia") |>
+    shapiro_test(Tot_Phen_Ind, Col_Int_420_520, Col_Int_420_520_620, Hue, Chem_Age_Ind,
+                 Tot_Anthocyans, Tot_Anthocyanins, Col_Anthocyanins, Tot_Tannins,
+                 DpGl, CyGl, PtGl, PnGl, MvGl, DpGlAc, PtGlAc, PnGlAc, MvGlAc,
+                 DpGlCm, PtGlCm, PnGlCm, MvGlCm, MvGlCf) |>
+    mutate(Cultivar = "Mencia"),
+  wine |> filter(Cultivar == "Alicante Bouschet") |>
+    shapiro_test(Tot_Phen_Ind, Col_Int_420_520, Col_Int_420_520_620, Hue, Chem_Age_Ind,
+                 Tot_Anthocyans, Tot_Anthocyanins, Col_Anthocyanins, Tot_Tannins,
+                 DpGl, CyGl, PtGl, PnGl, MvGl, DpGlAc, PtGlAc, PnGlAc, MvGlAc,
+                 DpGlCm, PtGlCm, PnGlCm, MvGlCm, MvGlCf) |>
+    mutate(Cultivar = "Alicante Bouschet")
+) |>
+  filter(p < 0.05) |>
+  mutate(statistic = round(statistic, 3), p = round(p, 5)) |>
+  select(Cultivar, Variable = variable, W = statistic, `p-value` = p) |>
+  arrange(`p-value`) |>
+  knitr::kable()
+```
 
-Since marginal normality is necessary for MVN, these rejection are enough to conclude neither cultivars phenolic profile is multivariate normal. However, we must consider a power caveat where the probability we reject $H_0$ given $H_1$ is true is dictated by the number of observations and alicante Bouschet has n=10 observations which half the size of mencia. So, when we find this cultivar has fewer rejections it may not just indicate its more normal but that its harder to detect non-normality.
+
+Splitting the Shapiro-Wilk tests by cultivar resolves some of the pooled-sample results. Total anthocyanins and total anthocyans both appeared strongly non-normal when tested on the pooled data, with extremely small p-values, but neither rejects within the Alicante Bouschet cultivar. This suggests that the cultivar gap identified in @sec-descriptive creates an artificial mixture effect rather than reflecting genuine non-normality within either group.
+
+Thirteen of the 46 within-cultivar tests still reject at the 5% level. This is far more than would be expected by chance alone: across 46 tests we would expect roughly two spurious rejections (46 × 0.05 ≈ 2.3). The rejections are concentrated in two places. Mencía's concentration variables perform poorly, with total anthocyanins and total anthocyans both rejecting strongly, and the coumaroylated derivatives reject in both cultivars for DpGlCm and PnGlCm, and in Mencía alone for PtGlCm — compounds already identified in @sec-descriptive as the least consistent of the acylated group.
+
+Since marginal normality is a necessary condition for multivariate normality, these rejections are sufficient to conclude that neither cultivar's phenolic profile follows a multivariate normal distribution on the raw variable scale. One caveat should be noted, however. The power of the Shapiro-Wilk test to detect departures from normality depends on sample size, and the Alicante Bouschet group has only ten observations, half the number available for Mencía. The smaller number of rejections in that cultivar may therefore reflect reduced power to detect non-normality rather than a genuinely closer fit to the normal distribution.
 
 ### Principal Component Analysis
 
@@ -500,7 +520,7 @@ pander(ABDF)
 
 The analysis set out to describe the phenolic profiles of 30 AOC Valdeorras red wines examined in [@revilla2016], assess whether a multivariate normal model appropriately describes the distribution of key chemical markers, identify atypical observations and determines whether the two cultivars separated cleanly on the 23-variable phenolic profile. The results broadly confirm the findings of Revilla *et al.* [@revilla2016] while surfacing a structural feature within the Alicante Bouschet group that their analysis did not address directly.
 
-**Multivariate normality.** The correlation and univariate normality analyses (@sec-graphical, @sec-normality) show both that the raw phenolic variables are highly redundant, with 51 of 253 pairs correlating at \|r\| \> 0.8, and that several variables were non-normally distributed even on a within-cultivar level. 12 of the 42 within-cultivar Shapiro-Wilk tests rejected normality. These were concentrated within the Mencía cultivar (9 out of 12) and the coumaroylated anthocyanin derivatives of both cultivars. Since marginal normality is necessary for multivariate normality, we concluded neither cultivar’s phenolic profile is well approximated by a multivariate normal distribution on the raw variable scale. This, as well as the singular covariance matrices resulting from too many variables being assessed relative to the sample size, motivated the use of Principle Component Analysis throughout the remaining analysis. We were thereby able to work in a reduced space where the normality assumption is defensible. The pooled PCA scores (@tbl-shapiro-pca) were largely consistent with normality, with the exception of PC1 and PC5 overall and PC2 within each cultivar.
+**Multivariate normality.** The correlation and univariate normality analyses (@sec-graphical, @sec-normality) show both that the raw phenolic variables are highly redundant, with 51 of 253 pairs correlating at \|r\| \> 0.8, and that several variables were non-normally distributed even on a within-cultivar level. Thirteen of the 46 within-cultivar Shapiro-Wilk tests rejected normality. These were concentrated within the Mencía cultivar (10 out of 13) and the coumaroylated anthocyanin derivatives of both cultivars. Since marginal normality is necessary for multivariate normality, we concluded neither cultivar’s phenolic profile is well approximated by a multivariate normal distribution on the raw variable scale. This, as well as the singular covariance matrices resulting from too many variables being assessed relative to the sample size, motivated the use of Principal Component Analysis throughout the remaining analysis. We were thereby able to work in a reduced space where the normality assumption is defensible. The pooled PCA scores (@tbl-shap-R) were largely consistent with normality, with the exception of PC1 and PC5 overall and PC2 within each cultivar.
 
 **Cultivar Separation.** Consistent with [@revilla2016], we found that a PC1-PC2 scatterplot of the overall dataset (@fig-fullscatter-R) shows a clear separation between Mencía and Alicante Bouschet samples. This is reinforced by the Mahalanobis distance analysis (@tbl-mahalfull-R), which showed that every sample is highly inconsistent with the distribution of the opposing cultivar (p \< 0.0001 for all but one sample), while within-cultivar Mahalanobis distances flag only a small number of mildly unusual wines (M7, M8 and M17). This reinforces that the phenolic measurements analysed here can reliably distinguish between the 2 cultivars.
 
