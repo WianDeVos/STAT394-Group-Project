@@ -19,15 +19,11 @@ execute:
 
 ## Introduction {#sec-introduction}
 
-The phenolic composition of red wine — particularly its anthocyanin and tannin content — governs colour, astringency, bitterness and ageing potential, and it is shaped jointly by grape cultivar, growing conditions and winemaking practice. Because anthocyanin composition is under strong genetic control, the relative proportions of individual anthocyanins (the "anthocyanin fingerprint") have been proposed as an analytical tool for verifying the grape cultivar used to produce a wine, complementing more general spectrophotometric measures of colour and phenolic content.
+The taste, colour, and astringency of red wine, qualities of great importance to winemakers, sellers, and enjoyers, are governed by phenolic compounds, particularly anthocyanins and flavanols [@Cheynier298]. The phenolic composition of wines is affected by winemaking practices, but it is also heavily dependent on the variety of grape used, the location it was grown, and the weather it was exposed to while growing [@Kumsta2014; @Oliveira2020]. Hence, the cultivar, origin, and year of a wine are all markers of quality and can be advertised to increase the wine's sell value. For this reason, it is of great interest to winemakers and regulators to be able to identify wines that market themselves fraudulently. This is commonly assessed using physicochemical measures, testing the absorbance of different light wavelengths to determine the concentration of different families of compounds such as anthocyanins or tannins in the wine (UV-Vis spectrophotometry). However, it is also possible to assess the proportions of specific anthocyanin compounds in the wine, the "anthocyanin fingerprint," and this has proven to be a reliable way of identifying grape cultivars used in wine [@Kumsta2014; @revilla2016].
 
-Revilla *et al.* studied this question for wines from the Appellation d'Origine Contrôlée (AOC) Valdeorras region (Galicia, NW Spain), comparing single-cultivar young red wines made from Mencía — the principal red cultivar of the region — and Alicante Bouschet, a teinturier cultivar with red-pigmented flesh that is often blended with Mencía to boost colour [@revilla2016]. Thirty wines from the 2014 vintage (20 Mencía, 10 Alicante Bouschet) were analysed after malolactic fermentation using two complementary techniques: UV-Vis spectrophotometry, to quantify total phenols, colour intensity, hue, chemical age and tannin- and anthocyanin-related indices; and HPLC-DAD, to determine the relative proportions of 14 individual anthocyanins (5 monoglucosides and 9 acylated derivatives). The authors used principal component analysis and linear discriminant analysis on each variable block separately and found that both effectively separated the two cultivars.
+The phenolic composition of wines made from two grape cultivars in the Appellation d'Origine Contrôlée (AOC) Valdeorras region (Galicia, NW Spain) was studied by Revilla *et al.* [@revilla2016]. They compared wines from Mencia grapes - the principal red cultivar in the region - with Alicante Bouschet, a teinturier cultivar with red-pigmented flesh that is often blended with Mencia to boost colour [@revilla2016]. Thirty wines from the 2014 vintage (20 Mencía, 10 Alicante Bouschet) were analysed after malolactic fermentation using UV-Vis spectrophotometry to quantify total phenols, colour intensity, hue, chemical age and tannin- and anthocyanin-related indices, and using HPLC-DAD to determine the relative proportions of 14 individual anthocyanins (5 monoglucosides and 9 acylated derivatives). The authors used Principal Component Analysis (PCA) and Linear Discriminant Analysis on each variable block separately and found that both effectively separated the two cultivars.
 
-For this project we combine the quantitative data reported in Tables 1, 2, 5 and 6 of [@revilla2016] into a single data frame of 30 wines and 23 numeric variables (5 spectrophotometric/colour variables, 4 anthocyanin/tannin concentration variables, and 14 relative-proportion anthocyanin variables), together with the grape cultivar (Mencía or Alicante Bouschet) as a grouping variable. Unlike the original paper, which analysed the spectrophotometric and HPLC variable blocks separately, we treat all 23 variables jointly, which lets us ask whether the wines separate as cleanly on the full phenolic profile as they did on either block alone.
-
-Our aims are to describe this dataset quantitatively and graphically, assess whether a multivariate Gaussian model is a reasonable approximation for the joint distribution of these variables, identify any atypical wines, and determine whether unsupervised grouping of the samples recovers the Mencía/Alicante Bouschet distinction — and, if not, to discuss why.
-
-The remainder of the report is organised as follows. @sec-methodology describes how the data frame was assembled and the statistical methods used. @sec-results presents the descriptive, graphical and multivariate analyses. @sec-discussion interprets the findings in light of @revilla2016's own results and discusses their implications.
+Our aim is to expand on Revilla *et al.*'s analysis by looking at all 23 of their measured variables jointly and seeing if the samples form grouping structures beyond the cultivar separation. For this project, we combine the quantitative data reported in Tables 1, 2, 5 and 6 of [@revilla2016] into a single data frame of 30 wines and 23 numeric variables (5 spectrophotometric/colour variables, 4 anthocyanin/tannin concentration variables, and 14 relative-proportion anthocyanin variables). We first examine these variables descriptively, replicating the cultivar separation seen by Revilla *et al.*, before examining correlations between the variables and assessing each variable for departures from normality. As we find significant redundancy between variables and departures from normality for many of them, we perform PCA on the full dataset to reduce the dimensionality and thereby mostly, but not entirely, fix the issue of non-normality. Visual assessment of a scatterplot, as well as analysing the Mahalanobis distance of samples from possible distributions, provides further support for the cultivar split as well as identifying a possible divide between two sub-clusters within the Alicante Bouschet samples. Further analysis of Mahalanobis distances supports the claim that these are distinct sub-clusters instead of random outliers. Further analysis is limited by the size of the dataset, hence the significance of this clustering is difficult to determine, but may be of interest for further study.
 
 ## Methodology {#sec-methodology}
 
@@ -35,31 +31,25 @@ The remainder of the report is organised as follows. @sec-methodology describes 
 
 #### Data Assembly
 
-We combined the quantitative data reported in Tables 1, 2, 5 and 6 of [@revilla2016] into a single data frame. Sample labels from the original tables were used to create a Cultivar grouping variable, with samples beginning with M classified as Mencía and those beginning with T classified as Alicante Bouschet.
-
-The final dataset contained 30 wine samples, with 20 Mencía and 10 Alicante Bouschet wines, and 23 numerical variables. These included spectrophotometric and colour measurements, anthocyanin and tannin concentrations, and the relative proportions of individual anthocyanins.
-
-Data were extracted from a .docx copy of [@revilla2016] using the docxtractor package [@docxtractr] in R version 4.4.2 [@Rlanguage].
+The quantitative data reported in Tables 1, 2, 5 and 6 were extracted from a .docx copy of [@revilla2016] using the docxtractr package [@docxtractr] in R version 4.4.2 [@Rlanguage], and combined into a single data frame.
 
 #### Statistical Analyses
 
-All statistical analyses were carried out in R version 4.4.2 [@Rlanguage]. Functions from the base and stats packages were used for correlation analysis, principal component analysis and Mahalanobis distance calculations. The rstatix package was used for the Shapiro-Wilk normality tests.
-
-All statistical analyses were carried out using the base or stats packages of R version 4.4.2 [@Rlanguage].
+All statistical analyses were carried out in R version 4.4.2 [@Rlanguage]. Functions from the base and stats packages were used for correlation analysis, principal component analysis and Mahalanobis distance calculations. The rstatix package was used for the Shapiro-Wilk normality tests [@rstatix].
 
 #### Plots and Tables
 
-Plots were created primarily using the ggplot2 package [@ggplot2] in R version 4.4.2 [@Rlanguage], with ggcorrplot [@ggcorrplot] used to produce the correlation heatmap. Tables were created using the \`kable()\` function from the knitr package [@knitr]. Data preparation and reshaping were carried out using functions from the tidyverse [@tidyverse].
+The correlation heatmap was created using the ggplot2 [@ggplot2] and ggcorrplot [@ggcorrplot] packages in R [@Rlanguage] Scatterplots were created using base R plotting functions in R version 4.4.2 [@Rlanguage]. Tables were created using either the knitr [@knitr] or pander [@Rpander] packages, depending on which was most easily accessible to the analyst in the relevant section. Data preparation and reshaping were carried out using functions from the tidyverse [@tidyverse].
 
 ### Methods
 
-### Data assembly
+#### Data assembly
 
 We combined the quantitative data reported in Tables 1, 2, 5 and 6 of [@revilla2016] into a single data frame, using the sample labelling from the original tables (`M` = Mencía, `T` = Alicante Bouschet) to derive a `Cultivar` grouping variable.
 
 ```{r}
 #| label: read-data
-#| echo: true
+#| echo: false
 library(tidyverse)
 
 wine <- read_csv("extracted data.csv") |>
@@ -70,17 +60,15 @@ wine <- read_csv("extracted data.csv") |>
   )
 ```
 
-The resulting data frame contains 30 wines (20 Mencía, 10 Alicante Bouschet) and 23 numeric phenolic variables: 5 spectrophotometric/colour variables (`Tot_Phen_Ind`, `Col_Int_420_520`, `Col_Int_420_520_620`, `Hue`, `Chem_Age_Ind`) and 4 anthocyanin/tannin concentration variables (`Tot_Anthocyans`, `Tot_Anthocyanins`, `Col_Anthocyanins`, `Tot_Tannins`) from Tables 1 and 2, and 14 relative-proportion anthocyanin variables — 5 monoglucosides and 9 acylated derivatives (`DpGl` through `MvGlCf`) — from Tables 5 and 6.
+The resulting data frame contains 30 wines (20 Mencía, 10 Alicante Bouschet) and 23 numeric phenolic variables: 5 spectrophotometric/colour variables (`Tot_Phen_Ind`, `Col_Int_420_520`, `Col_Int_420_520_620`, `Hue`, `Chem_Age_Ind`) and 4 anthocyanin/tannin concentration variables (`Tot_Anthocyans`, `Tot_Anthocyanins`, `Col_Anthocyanins`, `Tot_Tannins`) from Tables 1 and 2, and 14 relative-proportion anthocyanin variables — 5 monoglucosides and 9 acylated derivatives (`DpGl` through `MvGlCf`) — from Tables 5 and 6 of [@revilla2016].
 
 #### Principal Component Analysis
 
-Principal Component Analysis (PCA) [@jolliffe2016] was performed on the dataset extracted from [@revilla2016] for the purpose of dimensionality reduction. Principal Components were derived from the full dataset, not from subgroupings of observations. Principal Components with retained variance greater than 1 were kept for use in analysis, and the rest discarded.
-
-The proportion of variation explained by the principal components was examined using scree plots. Scores from the leading components were then used to look for patterns among the wine samples and determine whether Mencía and Alicante Bouschet naturally formed separate groups. Cultivar was not used to calculate the principal components, so any separation between the groups was based only on the measured phenolic characteristics.
+Principal Component Analysis (PCA) was performed on the dataset extracted from [@revilla2016] for the purpose of dimensionality reduction. Principal Components were derived from the full dataset, not from subgroupings of observations. Principal Components with retained variance greater than 1 were kept for use in analysis, and the rest discarded.
 
 #### Normality Assessment
 
-The Shapiro-Wilk test was used to assess univariate normality for each numerical variable [@shapiro1965]. Tests were carried out separately for Mencía and Alicante Bouschet, as combining two groups with different distributions could make the pooled data appear non-normal simply because of the difference between cultivars.
+The Shapiro-Wilk test was used to assess univariate normality for each numerical variable. Tests were carried out separately for Mencía and Alicante Bouschet, as combining two groups with different distributions could make the pooled data appear non-normal simply because of the difference between cultivars.
 
 A significance level of 0.05 was used, with a p-value below 0.05 treated as evidence against normality. Although these tests assess each variable separately rather than testing multivariate normality directly, univariate normality is a necessary condition of a multivariate normal distribution. Therefore, clear departures from normality across several variables were taken as evidence that multivariate normality may not be a suitable assumption. The smaller Alicante Bouschet sample size was also considered, as departures from normality are harder to detect with fewer observations.
 
@@ -134,7 +122,7 @@ wine |>
   knitr::kable()
 ```
 
-The concentration measures reinforce this pattern, with Alicante Bouschet wines containing roughly two to three times the total anthocyans, total anthocyanins, coloured anthocyanins and total tannins of Mencía wines. Two features stand out. First, the Alicante Bouschet group is markedly more heterogeneous, with standard deviations two to three times those of the Mencía group on every variable; Revilla *et al.* attribute this to deliberate variation in maceration length, since these wines are commonly produced for blending and are managed to different phenolic targets [@revilla2016]. Second, the ranges overlap substantially in every case — most strikingly for total anthocyans, where the Mencía maximum of 892 mg/L exceeds the Alicante Bouschet minimum of 438 mg/L. This overlap is driven by two unusual Mencía wines, M16 and M17, which combine high anthocyanin content with the lowest tannin levels in the dataset; these observations recur in the analysis of atypical wines in @sec-outliers.
+The concentration measures reinforce this pattern, with Alicante Bouschet wines containing roughly two to three times the total anthocyans, total anthocyanins, coloured anthocyanins and total tannins of Mencía wines. Two features stand out. First, the Alicante Bouschet group is markedly more heterogeneous, with standard deviations two to three times those of the Mencía group on every variable; Revilla *et al.* attribute this to deliberate variation in maceration length, since these wines are commonly produced for blending and are managed to different phenolic targets [@revilla2016]. Second, the ranges overlap substantially in every case — most strikingly for total anthocyans, where the Mencía maximum of 892 mg/L exceeds the Alicante Bouschet minimum of 438 mg/L. This overlap is driven by two unusual Mencía wines, M16 and M17, which combine high anthocyanin content with the lowest tannin levels in the dataset; these observations recur in the analysis of atypical wines in @sec-surp.
 
 ```{r}
 #| label: tbl-summary-monoglucosides
@@ -172,7 +160,7 @@ wine |>
 
 Acylation distinguishes the cultivars through its pattern rather than its extent. All four acetylated derivatives are more abundant in Mencía wines, with the acetyl derivative of malvidin-3-O-glucoside showing the largest gap (8.74% against 3.36%) and, together with the acetyl derivative of petunidin, forming a further pair of non-overlapping ranges. The coumaroylated derivatives trend in the opposite direction, though less consistently: the delphinidin and peonidin forms are clearly higher in Alicante Bouschet, while the malvidin and petunidin forms differ little between groups. The caffeoyl derivative of malvidin shows no cultivar difference. This reversal in acylation preference, rather than any difference in total acylation, is what carries the varietal signal.
 
-### Graphical analysis {#sec-graphical}
+### Correlation analysis {#sec-graphical}
 
 Having examined each variable as a uni-variate case in @sec-descriptive, the next logical step is considering how these 23 variables relate with each other. This matters decriptively as it answers questions like, do variables measuring related wine chemistry move together as we would expect? This has important methodologically consequences, since high correlation between variables limits the effective dimensional of the dataset and motivates the use of PCA or other dimensionality reduction.
 
@@ -209,170 +197,56 @@ The correlation heatmap (@fig-correlation-heatmap) shows several near identical 
 ### Assessing multivariate normality {#sec-normality}
 
 ```{r}
-#| label: tbl-shapiro-univariate
-#| tbl-cap: "Shapiro-Wilk tests of univariate normality for each phenolic variable."
+#| label: tbl-shapiro-pooled
+#| tbl-cap: "Shapiro-Wilk tests of univariate normality for each phenolic variable, pooled across both cultivars."
 
 library(rstatix)
 
 wine |>
-  group_by(Cultivar) |>
-  shapiro_test(
-    Tot_Phen_Ind, Col_Int_420_520, Col_Int_420_520_620, Hue, Chem_Age_Ind,
-    Tot_Anthocyans, Tot_Anthocyanins, Col_Anthocyanins, Tot_Tannins,
-    DpGl, CyGl, PtGl, PnGl, MvGl,
-    DpGlAc, PtGlAc, PnGlAc, MvGlAc,
-    DpGlCm, PtGlCm, PnGlCm
-  ) |>
-  mutate(
-    statistic = round(statistic, 3),
-    p = round(p, 5)
-  ) |>
+  shapiro_test(Tot_Phen_Ind, Col_Int_420_520, Col_Int_420_520_620, Hue, Chem_Age_Ind,
+               Tot_Anthocyans, Tot_Anthocyanins, Col_Anthocyanins, Tot_Tannins,
+               DpGl, CyGl, PtGl, PnGl, MvGl,
+               DpGlAc, PtGlAc, PnGlAc, MvGlAc,
+               DpGlCm, PtGlCm, PnGlCm, MvGlCm, MvGlCf) |>
+  mutate(statistic = round(statistic, 3), p = round(p, 5)) |>
   rename(Variable = variable, W = statistic, `p-value` = p) |>
   arrange(`p-value`) |>
   knitr::kable()
 ```
 
-Splitting by cultivar clears up some of pooled sample results for "Tot_Anthocyanins" and "Tot_Anthocyans", both strongly non-normal pooled with extremely small p-values, but are fine within the Alicante Bouschet Cultivar. This suggests a gap from @sec-descriptive creating an artificial mixture effect, not real non-normality
-
-12 of 42 within-cultivar tests still reject at 5% significance, this is too many to be random as with 42 variables we would expect about 2 to reject by chance (42 \* 0.05 = 2.1). Mencia's total concentration variables are very poor "Tot_Anthocyanins", "Tot_Anthocyans" and coumaroylated derivatives are rejected for both cultivars "DpGICm" and "PnGICm" also in just mencia "PtGICm" which is already flagged before as the least consistent acylated compounds.
-
-Since marginal normality is necessary for MVN, these rejection are enough to conclude neither cultivars phenolic profile is multivariate normal. However, we must consider a power caveat where the probability we reject $H_0$ given $H_1$ is true is dictated by the number of observations and alicante Bouschet has n=10 observations which half the size of mencia. So, when we find this cultivar has fewer rejections it may not just indicate its more normal but that its harder to detect non-normality.
-
 ```{r}
-#| label: fig-flagged-distributions
-#| fig-cap: "Distributions of variables rejecting univariate normality, by cultivar."
-flagged <- c("Tot_Anthocyanins", "Tot_Anthocyans", "Tot_Tannins",
-             "DpGlCm", "PnGlCm", "PtGlCm")
-
-wine |>
-  select(Cultivar, all_of(flagged)) |>
-  pivot_longer(-Cultivar, names_to = "Variable", values_to = "value") |>
-  ggplot(aes(value, fill = Cultivar)) +
-  geom_histogram(aes(y = after_stat(density)), alpha = 0.5, bins = 12, position = "identity") +
-  facet_wrap(~Variable, scales = "free") +
-  theme_minimal(base_size = 11) +
-  labs(title = "Distributions of Variables Rejecting Univariate Normality")
-```
-
-### Atypical observations {#sec-outliers}
-
-The atypicality of a datapoint relative to a group distribution is measured by the Mahalanobis distance. For this dataset, atypicality will be assessed based on distance from the distribution of the cultivar samples, not from the overall dataset. Unfortunately, the number of variables measured, 23, exceeds the sample size of either cultivar, resulting in a singular, non-invertible covariance matrix, making the calculation of the Mahalanobis distance impossible. As such, we will use Principal Component Analysis and remove the non-
-
-```{r}
-#| label: tbl-mahalanobis-pooled
-#| tbl-cap: "Mahalanobis distances and associated tail probabilities for all 30 wines, computed on the full set of 23 phenolic variables."
-
-wineData <- as.data.frame(wine)
-wineDataVariables <- wineData[, 3:25]
-
-wineData$mahalanobis <- mahalanobis(
-  wineDataVariables,
-  center = colMeans(wineDataVariables),
-  cov = cov(wineDataVariables)
-)
-wineData$surprise <- pchisq(wineData$mahalanobis, df = 23, lower.tail = FALSE)
-
-wineData |>
-  select(Sample, Cultivar, mahalanobis, surprise) |>
-  mutate(
-    mahalanobis = round(mahalanobis, 2),
-    surprise = round(surprise, 4)
-  ) |>
-  rename(Wine = Sample, `Mahalanobis distance` = mahalanobis, `Tail probability` = surprise) |>
-  arrange(desc(`Mahalanobis distance`)) |>
-  knitr::kable()
-```
-
-```{r}
-#| label: tbl-shapiro-pca
-#| tbl-cap: "Shapiro-Wilk tests of normality applied to each principal component."
-
-winePCA <- prcomp(wineDataVariables, center = TRUE, scale = TRUE)
-wineDataPCADF <- as.data.frame(winePCA$x)
-
-tibble(
-  Component = colnames(wineDataPCADF),
-  W = sapply(wineDataPCADF, \(x) shapiro.test(x)$statistic),
-  `p-value` = sapply(wineDataPCADF, \(x) shapiro.test(x)$p.value)
-) |>
-  mutate(W = round(W, 3), `p-value` = round(`p-value`, 5)) |>
-  knitr::kable()
-```
-
-```{r}
-#| label: tbl-group-rank
-#| tbl-cap: "Sample size, number of variables, and covariance matrix rank for each cultivar."
-
-menciaData   <- wineData[wineData$Cultivar == "Mencia", 3:25]
-alicanteData <- wineData[wineData$Cultivar == "Alicante Bouschet", 3:25]
-
-tibble(
-  Cultivar = c("Mencia", "Alicante Bouschet"),
-  n = c(nrow(menciaData), nrow(alicanteData)),
-  p = c(ncol(menciaData), ncol(alicanteData)),
-  `Max rank (n-1)` = n - 1,
-  `Covariance rank` = c(qr(cov(menciaData))$rank, qr(cov(alicanteData))$rank)
-) |>
-  knitr::kable()
-```
-
-Within-cultivar Mahalanobis distances cannot be computed on the full variable set. The covariance matrix of a group of $n$ observations has rank at most $n-1$, so with 20 Mencía and 10 Alicante Bouschet wines against 23 variables, both within-group covariance matrices are singular and cannot be inverted (@tbl-group-rank). We therefore restrict the within-group analysis to the leading principal components of each cultivar, retaining enough components that the covariance matrix is of full rank.
-
-```{r}
-#| label: fig-scree-groups
-#| fig-cap: "Proportion of variance explained by each principal component, computed separately within each cultivar."
-#| fig-width: 7
-#| fig-height: 4
-
-scree_data <- function(dat, cultivar) {
-  p <- prcomp(dat, center = TRUE, scale. = TRUE)
-  tibble(
-    Cultivar = cultivar,
-    PC = seq_along(p$sdev),
-    Proportion = p$sdev^2 / sum(p$sdev^2)
-  )
-}
+#| label: tbl-shapiro-rejections
+#| tbl-cap: "Variables rejecting univariate normality at the 5% level, tested separately within each cultivar."
 
 bind_rows(
-  scree_data(menciaData, "Mencia"),
-  scree_data(alicanteData, "Alicante Bouschet")
+  wine |> filter(Cultivar == "Mencia") |>
+    shapiro_test(Tot_Phen_Ind, Col_Int_420_520, Col_Int_420_520_620, Hue, Chem_Age_Ind,
+                 Tot_Anthocyans, Tot_Anthocyanins, Col_Anthocyanins, Tot_Tannins,
+                 DpGl, CyGl, PtGl, PnGl, MvGl, DpGlAc, PtGlAc, PnGlAc, MvGlAc,
+                 DpGlCm, PtGlCm, PnGlCm, MvGlCm, MvGlCf) |>
+    mutate(Cultivar = "Mencia"),
+  wine |> filter(Cultivar == "Alicante Bouschet") |>
+    shapiro_test(Tot_Phen_Ind, Col_Int_420_520, Col_Int_420_520_620, Hue, Chem_Age_Ind,
+                 Tot_Anthocyans, Tot_Anthocyanins, Col_Anthocyanins, Tot_Tannins,
+                 DpGl, CyGl, PtGl, PnGl, MvGl, DpGlAc, PtGlAc, PnGlAc, MvGlAc,
+                 DpGlCm, PtGlCm, PnGlCm, MvGlCm, MvGlCf) |>
+    mutate(Cultivar = "Alicante Bouschet")
 ) |>
-  filter(PC <= 10) |>
-  ggplot(aes(PC, Proportion)) +
-  geom_col(fill = "grey40") +
-  facet_wrap(~Cultivar) +
-  scale_x_continuous(breaks = 1:10) +
-  labs(x = "Principal component", y = "Proportion of variance explained") +
-  theme_minimal()
-```
-
-```{r}
-#| label: tbl-mahalanobis-groupwise
-#| tbl-cap: "Within-cultivar Mahalanobis distances computed on the leading principal components of each group."
-
-pca_mahal <- function(dat, k) {
-  scores <- prcomp(dat, center = TRUE, scale. = TRUE)$x[, 1:k, drop = FALSE]
-  mahalanobis(scores, center = colMeans(scores), cov = cov(scores))
-}
-
-bind_rows(
-  tibble(
-    Wine = wineData$Sample[wineData$Cultivar == "Mencia"],
-    Cultivar = "Mencia",
-    Distance = pca_mahal(menciaData, 2)
-  ),
-  tibble(
-    Wine = wineData$Sample[wineData$Cultivar == "Alicante Bouschet"],
-    Cultivar = "Alicante Bouschet",
-    Distance = pca_mahal(alicanteData, 3)
-  )
-) |>
-  mutate(Distance = round(Distance, 2)) |>
-  arrange(Cultivar, desc(Distance)) |>
+  filter(p < 0.05) |>
+  mutate(statistic = round(statistic, 3), p = round(p, 5)) |>
+  select(Cultivar, Variable = variable, W = statistic, `p-value` = p) |>
+  arrange(`p-value`) |>
   knitr::kable()
 ```
 
-### Principal Component Analysis \[unfinished\]
+
+Splitting the Shapiro-Wilk tests by cultivar resolves some of the pooled-sample results. Total anthocyanins and total anthocyans both appeared strongly non-normal when tested on the pooled data, with extremely small p-values, but neither rejects within the Alicante Bouschet cultivar. This suggests that the cultivar gap identified in @sec-descriptive creates an artificial mixture effect rather than reflecting genuine non-normality within either group.
+
+Thirteen of the 46 within-cultivar tests still reject at the 5% level. This is far more than would be expected by chance alone: across 46 tests we would expect roughly two spurious rejections (46 × 0.05 ≈ 2.3). The rejections are concentrated in two places. Mencía's concentration variables perform poorly, with total anthocyanins and total anthocyans both rejecting strongly, and the coumaroylated derivatives reject in both cultivars for DpGlCm and PnGlCm, and in Mencía alone for PtGlCm — compounds already identified in @sec-descriptive as the least consistent of the acylated group.
+
+Since marginal normality is a necessary condition for multivariate normality, these rejections are sufficient to conclude that neither cultivar's phenolic profile follows a multivariate normal distribution on the raw variable scale. One caveat should be noted, however. The power of the Shapiro-Wilk test to detect departures from normality depends on sample size, and the Alicante Bouschet group has only ten observations, half the number available for Mencía. The smaller number of rejections in that cultivar may therefore reflect reduced power to detect non-normality rather than a genuinely closer fit to the normal distribution.
+
+### Principal Component Analysis
 
 As seen in @tbl-scree-R, the first five PCs each retained variance greater than 1, meaning they each account for more of the sample variance than the average of the original variables. The first five PCs also collectively retain 90.9% of the sample variance, while being a small enough number of variables to easily work with. As such, we retained the first five PCs and discarded the rest.
 
@@ -393,19 +267,24 @@ colnames(PCtable)[3] = "Cumulative Variance"
 pander(PCtable)
 ```
 
-### Normality Assessment \[unfinished\] {#sec-normality-R}
+### Normality Assessment of PCs {#sec-normality-R}
 
 Shapiro-Wilk tests on the derived PCs showed sufficient evidence to claim that PC1 (p=.0001) and PC5 (p=.01) were not normally distributed across the overall dataset. When assessed within each cultivar, both of these PCs appeared to follow a normal distribution, but PC2 did not appear to show a normal distribution within the Mencia (p=.0161) or Alicante Bouschet (p=.0095) cultivars (@tbl-shap-R) .
 
 ```{r}
 #| label: tbl-shap-R
-#| tbl-cap: "Shapiro-Wilk testing of PCs in aggregate and by cultivar."
+#| tbl-cap: "P-values for Shapiro-Wilk tests of PCs in aggregate and by cultivar. one star: p<.1, two stars: p<.05, three stars: p<.01"
 
 # Shapiro-Wilk test of PC1-5 aggregate and by cultivar
 library(pander)
 aggShap = rep(NA,5)
 menShap = rep(NA,5)
 abShap = rep(NA,5)
+wineData = as.data.frame(wine)
+wineDataVariables = wineData[, 3:25]
+winePCA <- prcomp(wineDataVariables, center = TRUE, scale = TRUE)
+wineDataPCADF <- as.data.frame(winePCA$x)
+
 for(i in 1:5){
   aggShap[i] = shapiro.test(wineDataPCADF[,i])$p.value
   menShap[i] = shapiro.test(wineDataPCADF[1:20,i])$p.value
@@ -423,6 +302,7 @@ for(i in 1:5){
                                       charTemp)))
   }
 }
+shapDF[1,2] = "0.0001 ***"
 pander(shapDF)
 ```
 
@@ -454,15 +334,15 @@ plot(wineDataPCADF$PC1,
          cex = 0.8)
 ```
 
-### Surprising Observations Analysis \[unfinished\]
+### Surprising Observations Analysis {#sec-surp}
 
-Under the assumption that all samples share an underlying multivariate normal distribution, sample M8 is a significant outlier (p=.0096), while samples M17 (p=.0747) and T23 (p=.0987) are slightly but not severely deviant from the assumed distribution (@tbl-mahalfull-R) . When each cultivar is assumed to form a separate multivariate normal distribution, however, there are no strong outliers and three slightly surprising samples: M7 (p=.0732), M8 (p=.0583), and M17(p=.0579). This lends moderate additional evidence to the claim that the variables measured by [@revilla2016] can reliably separate wine samples of these two cultivars. More compellingly, we see that every sample is highly inconsistent with the distribution of the opposing cultivar (p=.0057 for sample T25, p\<.0001 for all other samples), hence it is very unlikely that samples of either of these cultivars could be mistakenly categorised as belonging to the other cultivar when these measurements are known.
+Under the assumption that all samples share an underlying multivariate normal distribution, sample M8 is a significant outlier (p=.0096), while samples M17 (p=.0747) and T23 (p=.0987) are slightly but not severely deviant (@tbl-mahalfull-R) . When each cultivar is assumed to form a separate multivariate normal distribution, however, there are no strong outliers and three slightly surprising samples: M7 (p=.0732), M8 (p=.0583), and M17 (p=.0579). This lends moderate additional evidence to the claim that the variables measured by [@revilla2016] can reliably separate wine samples of these two cultivars. More compellingly, we see that every sample is highly inconsistent with the distribution of the opposing cultivar (p=.0057 for sample T25, p\<.0001 for all other samples), hence it is very unlikely that samples of either of these cultivars could be mistakenly categorised as belonging to the other cultivar when these measurements are known.
 
-The final column of @tbl-mahalfull-R shows the p-value of the sample's Mahalanobis distance to the distribution of its cultivar, when the sample itself is excluded from calculating the distribution. Using this method, two of the Mencia samples appear slightly surprising: M16 (p=.0847) and M19 (p=.0811), one is surprising: M6 (p=.0367), and three are very surprising: M7 (p=.0002), M8 (p\<.0001) and M17 (p\<.0001). Within the Alicante Bouschet cultivar, however, samples T22-T26 all become very surprising (p=.0002 for T24, p\<.0001 for all others). This is consistent with these observations belonging to a separate distribution with greater variance, so the following analyses will focus on testing whether these five observations can sensibly be categorised as a separate cluster from samples T21 and T27-T30.
+The final column of @tbl-mahalfull-R shows the p-value of the sample's Mahalanobis distance to the distribution of its cultivar, when the distribution is calculated excluding the sample itself. Using this method, two of the Mencia samples appear slightly surprising: M16 (p=.0847) and M19 (p=.0811), one is surprising: M6 (p=.0367), and three are very surprising: M7 (p=.0002), M8 (p\<.0001) and M17 (p\<.0001). Within the Alicante Bouschet cultivar, however, samples T22-T26 all become very surprising (p=.0002 for T24, p\<.0001 for all others). This is consistent with these observations belonging to a separate distribution with greater variance, so the following analyses will focus on testing whether these five observations can sensibly be categorised as a separate cluster from samples T21 and T27-T30.
 
 ```{r}
 #| label: tbl-mahalfull-R
-#| tbl-cap: "Consistency of observations with theorised distributions."
+#| tbl-cap: "P-value of observations belonging to theorised distributions. one star: p<.1, two stars: p<.05, three stars: p<.01. 'Full': no split by cultivar, 'Exclusion': cultivar distribution calculated without sample"
 
 # surprising results for mahalanobis: full model, cultivar split, cultivar split with exclusion
 presFullModel = rep(NA,30)
@@ -546,9 +426,9 @@ colnames(mahalTable) = c("Sample","Full","Mencia","A. Bouschet","Exclusion")
 pander(mahalTable)
 ```
 
-### Subgrouping Analysis \[unfinished\]
+### Subgrouping Analysis
 
-For the following analyses, samples T21 and T27-T30 are labelled as "Cluster 1" and samples T22-T26 are labelled "Cluster 2." PC4 and PC5 were dropped for these analyses, since the Mahalanobis distance cannot be meaningfully calculated for a cluster of five observations with more than three variables [@pires2024] . Collectively, these three PCs retain 79.7% of the sample variance {table PCs}.
+For the following analyses, samples T21 and T27-T30 are labelled as "Cluster 1" and samples T22-T26 are labelled "Cluster 2." PC4 and PC5 were dropped for these analyses, since the Mahalanobis distance cannot be meaningfully calculated for a cluster of five observations with more than three variables [@pires2024] . Collectively, these three PCs retain 79.7% of the sample variance (@tbl-scree-R).
 
 Visual assessment of @fig-scatterAB-R indicates no overlap between Cluster 1 and Cluster 2, though Cluster 1 shows much tighter grouping than Cluster 2 and sample T22 has a PC2 value much more consistent with Cluster 1 than Cluster 2.
 
@@ -584,7 +464,7 @@ plot(wineDataPCADFR[21:30,]$PC1,
 
 ```{r}
 #| label: tbl-mahalAB-R
-#| tbl-cap: "Consistency of Alicante Bouschet samples with theorised clusters."
+#| tbl-cap: "Consistency of Alicante Bouschet samples with theorised clusters. one star: p<.1, two stars: p<.05, three stars: p<.01"
 
 
 # mahalanobis AB PC1-3 without exclusion
@@ -640,7 +520,7 @@ pander(ABDF)
 
 The analysis set out to describe the phenolic profiles of 30 AOC Valdeorras red wines examined in [@revilla2016], assess whether a multivariate normal model appropriately describes the distribution of key chemical markers, identify atypical observations and determines whether the two cultivars separated cleanly on the 23-variable phenolic profile. The results broadly confirm the findings of Revilla *et al.* [@revilla2016] while surfacing a structural feature within the Alicante Bouschet group that their analysis did not address directly.
 
-**Multivariate normality.** The correlation and univariate normality analyses (@sec-graphical, @sec-normality) show both that the raw phenolic variables are highly redundant, with 51 of 253 pairs correlating at \|r\| \> 0.8, and that several variables were non-normally distributed even on a within-cultivar level. 12 of the 42 within-cultivar Shapiro-Wilk tests rejected normality. These were concentrated within the Mencía cultivar (9 out of 12) and the coumaroylated anthocyanin derivatives of both cultivars. Since marginal normality is necessary for multivariate normality, we concluded neither cultivar’s phenolic profile is well approximated by a multivariate normal distribution on the raw variable scale. This, as well as the singular covariance matrices resulting from too many variables being assessed relative to the sample size, motivated the use of Principle Component Analysis throughout the remaining analysis. We were thereby able to work in a reduced space where the normality assumption is defensible. The pooled PCA scores (@tbl-shapiro-pca) were largely consistent with normality, with the exception of PC1 and PC5 overall and PC2 within each cultivar.
+**Multivariate normality.** The correlation and univariate normality analyses (@sec-graphical, @sec-normality) show both that the raw phenolic variables are highly redundant, with 51 of 253 pairs correlating at \|r\| \> 0.8, and that several variables were non-normally distributed even on a within-cultivar level. Thirteen of the 46 within-cultivar Shapiro-Wilk tests rejected normality. These were concentrated within the Mencía cultivar (10 out of 13) and the coumaroylated anthocyanin derivatives of both cultivars. Since marginal normality is necessary for multivariate normality, we concluded neither cultivar’s phenolic profile is well approximated by a multivariate normal distribution on the raw variable scale. This, as well as the singular covariance matrices resulting from too many variables being assessed relative to the sample size, motivated the use of Principal Component Analysis throughout the remaining analysis. We were thereby able to work in a reduced space where the normality assumption is defensible. The pooled PCA scores (@tbl-shap-R) were largely consistent with normality, with the exception of PC1 and PC5 overall and PC2 within each cultivar.
 
 **Cultivar Separation.** Consistent with [@revilla2016], we found that a PC1-PC2 scatterplot of the overall dataset (@fig-fullscatter-R) shows a clear separation between Mencía and Alicante Bouschet samples. This is reinforced by the Mahalanobis distance analysis (@tbl-mahalfull-R), which showed that every sample is highly inconsistent with the distribution of the opposing cultivar (p \< 0.0001 for all but one sample), while within-cultivar Mahalanobis distances flag only a small number of mildly unusual wines (M7, M8 and M17). This reinforces that the phenolic measurements analysed here can reliably distinguish between the 2 cultivars.
 
