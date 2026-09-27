@@ -21,6 +21,16 @@ format:
 bibliography: references.bib
 ---
 
+## Background {.smaller}
+
+- Red wine colour, bitterness, astringency based on phenols, including anthocyanins
+- Anthocyanins originate in grapes, produced based on genetics
+- Ratio of different anthocyanins in wine ("anthocyanin fingerprint") strongly linked to grape cultivar
+- Key takeaway: anthocyanin fingerprint of a wine should tell us what grape cultivar it was made  from
+
+---
+
+
 ## The question {.smaller}
 
 - Phenolic composition (anthocyanins, tannins) drives red wine colour, bitterness, astringency, ageing
