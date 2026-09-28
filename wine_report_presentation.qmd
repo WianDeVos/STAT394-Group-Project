@@ -45,15 +45,14 @@ bibliography: references.bib
 
 ---
 
-## Overview {.smaller}
+## Methods {.smaller}
 
-- Descriptive analysis: cultivars have different means for a number of raw variables
-- Correlation analysis: numerous raw variables correlated strongly with each other
-- Normality check: several raw variables show evidence of non-normality
-- PCA: fixed redundancy, improved normality somewhat
-- Mahalanobis distance: 
-
--> normality check -> PCA -> Mahalanobis distance -> Mahalanobis distance within
+- Descriptive analysis: compared mean and variance across cultivars
+- Correlation analysis: Pearson correlations calculated for all pairs of raw variables
+- Normality check: Shapiro-Wilk tests on all raw variables
+- PCA: retained all principal components with variance greater than 1
+- Mahalanobis distance: calculated the Mahalanobis distance for each point under four different conditions
+- Cluster analysis: calculated Mahalanobis distance for each Alicante Bouschet sample assuming two clusters
 
 ---
 
@@ -159,7 +158,37 @@ Two independent problems point to the same fix:
 
 ```{r}
 #| echo: false
-#| eval: false
+#| eval: true
+
+
+library(pander)
+aggShap = rep(NA,5)
+menShap = rep(NA,5)
+abShap = rep(NA,5)
+wineData = as.data.frame(wine)
+wineDataVariables = wineData[, 3:25]
+winePCA <- prcomp(wineDataVariables, center = TRUE, scale = TRUE)
+wineDataPCADF <- as.data.frame(winePCA$x)
+
+for(i in 1:5){
+  aggShap[i] = shapiro.test(wineDataPCADF[,i])$p.value
+  menShap[i] = shapiro.test(wineDataPCADF[1:20,i])$p.value
+  abShap[i] = shapiro.test(wineDataPCADF[21:30,i])$p.value
+}
+shapDF = data.frame(Component = c("PC1","PC2","PC3","PC4","PC5"), Aggregate = aggShap, Mencia = menShap, AlicanteBouschet = abShap)
+colnames(shapDF)[4] = "Alicante Bouschet"
+
+for(i in 1:5){
+  for(j in 2:4){
+    charTemp = as.character(round(as.numeric(shapDF[i,j]),4))
+    shapDF[i,j] = ifelse(shapDF[i,j] <= 0.01, paste0(charTemp," ***"),
+                        ifelse(shapDF[i,j] <= 0.05, paste0(charTemp, " **"),
+                               ifelse(shapDF[i,j] <=0.1, paste0(charTemp, " *"),
+                                      charTemp)))
+  }
+}
+shapDF[1,2] = "0.0001 ***"
+
 pander::pander(shapDF)  # PC1–5 Shapiro-Wilk, aggregate + by cultivar
 ```
 
@@ -175,7 +204,7 @@ pander::pander(shapDF)  # PC1–5 Shapiro-Wilk, aggregate + by cultivar
 
 ```{r}
 #| echo: false
-#| eval: false
+#| eval: true
 
 wineDataPCADF <- as.data.frame(winePCA$x)
 plot(wineDataPCADF$PC1, wineDataPCADF$PC2,
@@ -194,7 +223,7 @@ plot(wineDataPCADF$PC1, wineDataPCADF$PC2,
 
 ```{r}
 #| echo: false
-#| eval: false
+#| eval: true
 
 wineDataPCADFR = wineDataPCADF[,1:5]
 plot(wineDataPCADFR[21:30,]$PC1, wineDataPCADFR[21:30,]$PC2,
