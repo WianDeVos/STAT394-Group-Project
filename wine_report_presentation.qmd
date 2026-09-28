@@ -30,6 +30,32 @@ bibliography: references.bib
 
 ---
 
+## The paper {.smaller}
+
+- Compared wine from Mencia grapes (20 samples) with wine from Alicante Bouschet grapes (10 samples)
+- UV-Vis Spectrophotometry (9 variables) compared to HPLC-DAD (14 variables)
+- Both techniques separated samples by cultivar, HPLC more reliable
+
+---
+
+## The aim {.smaller}
+
+- Look at grouping structure in data from Revilla *et al.*
+- Use aggregate data instead of separate blocks
+
+---
+
+## Overview {.smaller}
+
+- Descriptive analysis: cultivars have different means for a number of raw variables
+- Correlation analysis: numerous raw variables correlated strongly with each other
+- Normality check: several raw variables show evidence of non-normality
+- PCA: fixed redundancy, improved normality somewhat
+- Mahalanobis distance: 
+
+-> normality check -> PCA -> Mahalanobis distance -> Mahalanobis distance within
+
+---
 
 ## The question {.smaller}
 
@@ -150,6 +176,8 @@ pander::pander(shapDF)  # PC1–5 Shapiro-Wilk, aggregate + by cultivar
 ```{r}
 #| echo: false
 #| eval: false
+
+wineDataPCADF <- as.data.frame(winePCA$x)
 plot(wineDataPCADF$PC1, wineDataPCADF$PC2,
      pch = 21, bg = c(rep("red",20), rep("blue",10)))
 ```
@@ -167,6 +195,8 @@ plot(wineDataPCADF$PC1, wineDataPCADF$PC2,
 ```{r}
 #| echo: false
 #| eval: false
+
+wineDataPCADFR = wineDataPCADF[,1:5]
 plot(wineDataPCADFR[21:30,]$PC1, wineDataPCADFR[21:30,]$PC2,
      pch = 21, bg = c("green", rep("black",5), rep("green",4)))
 ```
