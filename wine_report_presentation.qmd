@@ -26,22 +26,22 @@ bibliography: references.bib
 - Red wine colour, bitterness, astringency based on phenols, including anthocyanins
 - Anthocyanins originate in grapes, produced based on genetics
 - Ratio of different anthocyanins in wine ("anthocyanin fingerprint") strongly linked to grape cultivar
-- Key takeaway: anthocyanin fingerprint of a wine should tell us what grape cultivar it was made  from
+
+> Key takeaway: anthocyanin fingerprint of a wine should tell us what grape cultivar it was made  from
 
 ---
 
 ## The paper {.smaller}
 
-- Compared wine from Mencia grapes (20 samples) with wine from Alicante Bouschet grapes (10 samples)
-- UV-Vis Spectrophotometry (9 variables) compared to HPLC-DAD (14 variables)
+- @revilla2016 compared wine from Mencia grapes (20 samples) with wine from Alicante Bouschet grapes (10 samples)
+- UV-Vis Spectrophotometry (9 variables) compared to HPLC-DAD (14 variables) using PCA and LDA
 - Both techniques separated samples by cultivar, HPLC more reliable
 
----
+**Our aims**
 
-## The aim {.smaller}
-
-- Look at grouping structure in data from Revilla *et al.*
+- Look at grouping structure in data from @revilla2016
 - Use aggregate data instead of separate blocks
+- See if cultivar separation is replicated, and if any other structures are present
 
 ---
 
@@ -53,20 +53,6 @@ bibliography: references.bib
 - PCA: retained all principal components with variance greater than 1
 - Mahalanobis distance: calculated the Mahalanobis distance for each point under four different conditions
 - Cluster analysis: calculated Mahalanobis distance for each Alicante Bouschet sample assuming two clusters
-
----
-
-## The question {.smaller}
-
-- Phenolic composition (anthocyanins, tannins) drives red wine colour, bitterness, astringency, ageing
-- Anthocyanin "fingerprint" is under strong genetic control → potentially useful for verifying grape cultivar
-- Revilla *et al.* (2016) compared **Mencía** (principal Valdeorras red) vs. **Alicante Bouschet** (teinturier blending grape) — 30 wines, 2014 vintage — using PCA/LDA on spectrophotometric and HPLC blocks **separately**
-
-**Our contribution**: combine all 23 phenolic variables into one joint analysis
-
-- Does the full profile separate cultivars as cleanly as either block alone?
-- Is multivariate normality a reasonable assumption?
-- Are there atypical wines, or hidden structure within a cultivar?
 
 ---
 
@@ -268,4 +254,8 @@ PC1–PC2 restricted to Alicante Bouschet shows **two distinct clusters**:
 - Given small sample size, this is a **hypothesis-generating result**, not a confirmed finding — worth testing in a larger sample with known maceration/blending records
 
 Questions?
+
+--- 
+
+## References {.smaller}
 
