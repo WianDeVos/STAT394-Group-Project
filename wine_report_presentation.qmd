@@ -128,15 +128,59 @@ Shapiro-Wilk tested **per variable, per cultivar** (pooling would conflate the c
 
 ## Why PCA {.smaller}
 
+:::: {.columns}
+
+::: {.column width="48%"}
+```{r}
+#| echo: false
+#| label: fig-scree
+#| fig-cap: "Scree plot of the first ten principal components."
+#| fig-width: 5.5
+#| fig-height: 4
+
+winePCA <- prcomp(wine |> select(-Sample, -Cultivar), center = TRUE, scale. = TRUE)
+
+tibble(PC = 1:10, Eigenvalue = winePCA$sdev[1:10]^2) |>
+  ggplot(aes(PC, Eigenvalue)) +
+  geom_line(colour = "#2471A3", linewidth = 1) +
+  geom_point(colour = "#2471A3", size = 3) +
+  geom_hline(yintercept = 1, colour = "#C0392B", linetype = "dashed", linewidth = 0.7) +
+  scale_x_continuous(breaks = 1:10) +
+  labs(x = "Principal Component", y = "Eigenvalue") +
+  theme_minimal(base_size = 13)
+```
+:::
+
+::: {.column width="4%"}
+:::
+
+::: {.column width="48%"}
 Two independent problems point to the same fix:
 
-1.  **Singular covariance matrices** — with 23 variables and only 20 (or 10) wines per cultivar, $\hat\Sigma$ has rank ≤ n−1 and can't be inverted → Mahalanobis distance is undefined on the raw variables
-2.  **Redundancy** — the correlation structure shows much of the 23-dimensional variation is not independent
+1. **Singular covariance matrices** — 23 variables, only 20 (or 10) wines per cultivar, so $\hat\Sigma$ can't be inverted and Mahalanobis distance is undefined
+2. **Redundancy** — much of the 23-dimensional variation is not independent
+:::
 
-**Approach**: retain PCs with variance \> 1 (Kaiser criterion)
+::::
 
-- First 5 PCs retain **90.9%** of total sample variance
-- Gives an invertible, lower-dimensional space in which to compute Mahalanobis distances and assess normality
+**Approach**: retain PCs with eigenvalue > 1 (Kaiser criterion) — the first 5 retain **90.9%** of total variance, giving an invertible space for Mahalanobis distances and normality checks
+
+::: {.notes}
+Eigenvalue > 1 means a component accounts for more variance than a single original
+variable would on its own — that's the Kaiser criterion, and the dashed line is where
+it sits.
+
+Be honest about the cutoff: PC1 is dominant, PC2 and PC3 are clearly above the line,
+but PC4 and PC5 are only just above it. There's no dramatic elbow here — we followed
+the rule rather than reading an obvious break. If someone pushes, the answer is that
+dropping to three PCs would still leave us able to invert the covariance matrix, but
+we'd lose about 11% of the variance and PC4 turns out to matter for M7.
+
+Both problems on this slide are really the same problem in different clothes —
+23 variables is too many for 30 observations, and they're not independent anyway.
+
+Next slide checks whether the components are better behaved than the raw variables.
+:::
 
 ------------------------------------------------------------------------
 
@@ -263,6 +307,8 @@ Our analysis set out to answer four questions about these 30 wines:
 ::: {.column width="55%"}
 ```{r}
 #| echo: false
+#| label: fig-pca-cultivar
+#| fig-cap: "Wines projected onto the first two principal components, coloured by cultivar."
 #| fig-width: 6
 #| fig-height: 5
 
@@ -384,6 +430,8 @@ It didn't fully work — PC2 still rejects in both cultivars — so we proceeded
 ::: {.column width="52%"}
 ```{r}
 #| echo: false
+#| label: fig-mencia-pc45
+#| fig-cap: "Mencía wines on the fourth and fifth principal components, with M7 and M8 highlighted."
 #| fig-width: 6
 #| fig-height: 5
 
@@ -444,6 +492,8 @@ the distance measure summarises all of it in one number.
 ::: {.column width="52%"}
 ```{r}
 #| echo: false
+#| label: fig-ab-clusters
+#| fig-cap: "Alicante Bouschet wines on the first two principal components, coloured by theorised cluster."
 #| fig-width: 6
 #| fig-height: 5
 
