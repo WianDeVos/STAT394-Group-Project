@@ -282,15 +282,10 @@ Two independent problems point to the same fix:
 **Approach**: retain PCs with eigenvalue > 1 (Kaiser criterion) — the first 5 retain **90.9%** of total variance, giving an invertible space for Mahalanobis distances and normality checks
 
 ::: {.notes}
-
-
-<<<<<<< HEAD
 PCA solves two problems. First, Mahalanobis distance needs an invertible covariance matrix, but with 23 variables and only 10 or 20 wines per cultivar (ranks of 19 and 9 which is less than number of variables), it's singular .
 Second, there's the redundancy. Using the Kaiser criterion set to above 1 eigenvalue, we kept five components covering 90.9% of the variance. PC4 and PC5 only just clear the line, so we followed the rule rather than a clear elbow.
 
 Oliver finish 
-=======
->>>>>>> 2edee0c4fb249f47848b6ec5db347b57ce52c21e
 :::
 
 ------------------------------------------------------------------------
@@ -338,20 +333,16 @@ pander::pander(shapDF)  # PC1–5 Shapiro-Wilk, aggregate + by cultivar
 
 > Reducing dimensionality helped, but did **not** fully resolve non-normality — Mahalanobis-based p-values later on should be read as approximately, not exactly, valid
 
-<<<<<<< HEAD
 ::: notes
 Mahalanobis p-values assume normality, and we saw the raw variables failed that.  
 So we tested the components. Pooled, PC1 and PC5 reject, which is expected when mixing two cultivars. However, within each cultivar they're normal, coversely PC2 rejects in both. 
 So PCA helped but didn't fully fix our normality problem, and our Mahalanobis p-values are approximate, not exact.
 :::
-
-=======
 :::notes
 
 Oliver finish
 
 :::
->>>>>>> 2edee0c4fb249f47848b6ec5db347b57ce52c21e
 ------------------------------------------------------------------------
 
 ## Can we find groups? {.smaller}
@@ -546,7 +537,7 @@ Wian finish
 
 > Plausible explanation: different maceration regimes or blending targets across batches — but we have no winemaking records to confirm this directly
 
-:::notes
+::: notes
 Alicante Bouschet was already more variable, and Revilla attributed that to varying maceration length. Our data suggest not one spread-out group but two distinct phenolic profiles. Different maceration or blending across batches is plausible, but we have no winemaking records, this is just a hypothesis.
 :::
 ------------------------------------------------------------------------
