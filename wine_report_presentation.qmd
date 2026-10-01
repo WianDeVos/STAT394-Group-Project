@@ -56,6 +56,10 @@ editor:
 - Mahalanobis distance: calculated the Mahalanobis distance for each point under four different conditions
 - Cluster analysis: calculated Mahalanobis distance for each Alicante Bouschet sample assuming two clusters
 
+:::notes
+Riley finish 
+:::
+
 ------------------------------------------------------------------------
 
 ## The data {.smaller}
@@ -95,6 +99,8 @@ wine <- read_csv("extracted data.csv") |>
 ::: {.column width="58%"}
 ```{r}
 #| echo: false
+#| label: fig-correlation
+#| fig-cap: "Pairwise Pearson correlations among the 23 phenolic variables, ordered by hierarchical clustering."
 #| fig-width: 6.5
 #| fig-height: 5.5
 wine |>
@@ -118,20 +124,68 @@ wine |>
 
 > This redundancy motivates dimensionality reduction via PCA
 :::
+
+::: notes 
+
+Oliver finish 
+:::
+
 ::::
-## Is multivariate normality reasonable? {.smaller}
+## Can we assume multivariate normality? {.smaller .scrollable}
 
-Shapiro-Wilk tested **per variable, per cultivar** (pooling would conflate the cultivar mean gap with real non-normality)
+:::::: columns
+::: {.column width="42%"}
+**Rejections at 5%** (13 of 46)
 
-- **13 of 42 within-cultivar tests reject normality** at 5% — far more than the \~2 expected by chance
-- Concentrated in:
-  - Mencía's total concentration variables (`Tot_Anthocyanins`, `Tot_Anthocyans`, `Tot_Tannins`)
-  - Coumaroylated derivatives, in **both** cultivars
+|     | Variable         | p      |
+|-----|------------------|--------|
+| M   | Tot_Anthocyanins | 0.0000 |
+| M   | Tot_Anthocyans   | 0.0000 |
+| M   | DpGlCm           | 0.0001 |
+| M   | PtGlCm           | 0.0035 |
+| M   | Tot_Tannins      | 0.0135 |
+| AB  | DpGlCm           | 0.0159 |
+| AB  | PnGlCm           | 0.0216 |
+| M   | PnGlCm           | 0.0247 |
+| M   | MvGlAc           | 0.0262 |
+| M   | DpGl             | 0.0321 |
+| M   | MvGlCf           | 0.0337 |
+| AB  | PtGlAc           | 0.0427 |
+| M   | PnGl             | 0.0482 |
 
-> Marginal normality is *necessary* for MVN — these rejections are sufficient to conclude neither cultivar's raw phenolic profile is multivariate normal
+*M = Mencía, AB = Alicante Bouschet*
+:::
 
-**Caveat**: Alicante Bouschet (n=10) has lower power to detect non-normality than Mencía (n=20) — fewer rejections there isn't necessarily "more normal"
+::: {.column width="6%"}
+:::
 
+::: {.column width="52%"}
+**No — not on the raw variables.**
+
+- **13 of 46** within-cultivar tests reject, against \~2 expected by chance
+- **10 of 13** are Mencía
+- Coumaroylated derivatives (DpGlCm, PnGlCm) reject in **both** cultivars
+- PCA improves matters but **PC2 still rejects** in both
+
+> Mahalanobis p-values that follow are approximately, not exactly, valid
+:::
+::::::
+
+::: notes
+This is the Shapiro-Wilk test — null hypothesis is that the data are normally distributed, so a small p-value means we reject normality. Chose it because n is small; it has better power than Kolmogorov-Smirnov at this sample size.
+
+We tested each variable separately, within each cultivar. 23 variables × 2 cultivars = 46 tests.
+
+The table shows all 13 rejections
+
+10 of the 13 being Mencía sounds like Mencía is worse behaved, but Alicante Bouschet only has n=10 against Mencía's n=20, so we may just be less able to detect problems there.
+
+What we did about it: rather than transform variables or abandon the normality-based approach, we moved to principal components. PCA gave us two things at once — it handled the redundancy, and the components are linear combinations of 23 variables, so the central limit theorem pushes them toward normality even when the inputs aren't normal. That's why PC1, PC3, PC4 all pass.
+
+It didn't fully work — PC2 still rejects in both cultivars — so we proceeded with Mahalanobis distances knowing the chi-square reference distribution is approximate. We flag this in Limitations rather than pretending it away.
+
+Wian finish
+:::
 ------------------------------------------------------------------------
 
 ## Why PCA {.smaller}
@@ -188,6 +242,8 @@ Both problems on this slide are really the same problem in different clothes —
 23 variables is too many for 30 observations, and they're not independent anyway.
 
 Next slide checks whether the components are better behaved than the raw variables.
+
+Oliver finish 
 :::
 
 ------------------------------------------------------------------------
@@ -237,78 +293,6 @@ pander::pander(shapDF)  # PC1–5 Shapiro-Wilk, aggregate + by cultivar
 
 ------------------------------------------------------------------------
 
-## Cultivar separation {.smaller}
-
-```{r}
-#| echo: false
-#| eval: true
-
-wineDataPCADF <- as.data.frame(winePCA$x)
-plot(wineDataPCADF$PC1, wineDataPCADF$PC2,
-     pch = 21, bg = c(rep("red",20), rep("blue",10)))
-```
-
-- PC1–PC2 scatterplot clearly replicates Revilla et al.'s cultivar separation
-- Confirmed statistically: **every wine is highly inconsistent with the opposing cultivar's distribution** (p \< 0.0001, except one wine at p = 0.0057)
-- Within-cultivar Mahalanobis distances flag only a few mildly unusual wines (M7, M8, M17)
-
-> The full 23-variable joint profile separates cultivars just as reliably as Revilla et al.'s separate block-wise analyses
-
-------------------------------------------------------------------------
-
-## The headline finding: structure within Alicante Bouschet {.smaller}
-
-```{r}
-#| echo: false
-#| eval: true
-
-wineDataPCADFR = wineDataPCADF[,1:5]
-plot(wineDataPCADFR[21:30,]$PC1, wineDataPCADFR[21:30,]$PC2,
-     pch = 21, bg = c("green", rep("black",5), rep("green",4)))
-```
-
-PC1–PC2 restricted to Alicante Bouschet shows **two distinct clusters**:
-
-- **Cluster 1**: T21, T27–T30 (tight grouping)
-- **Cluster 2**: T22–T26 (diverges clearly along PC2)
-
-**Mahalanobis evidence is decisive:**
-
-- Every sample highly consistent with its *own* theorised cluster (p ≥ 0.202)
-- Every sample highly inconsistent with the *other* cluster (p \< 0.0001)
-- Critically, this is **mutual** — not just Cluster 2 wines looking odd from Cluster 1's viewpoint
-
-------------------------------------------------------------------------
-
-## Why might this be happening? {.smaller}
-
-- Alicante Bouschet already showed 2–3× the variability of Mencía on concentration variables (descriptive stage)
-- Revilla et al. attributed this to variable maceration length — the cultivar is often managed to different blending targets
-- **Our finding refines this**: rather than one heterogeneous group with a long tail, the data are more consistent with **two discrete phenolic profiles**
-
-> Plausible explanation: different maceration regimes or blending targets across batches — but we have no winemaking records to confirm this directly
-
-------------------------------------------------------------------------
-
-## Limitations {.smaller}
-
-- Subgroup analysis rests on **5 wines per cluster**, tested against covariance estimated from those same 5 observations (3 PCs) — small enough to be suggestive, not confirmatory
-- PC2's non-normality means the chi-square reference distribution underlying all Mahalanobis p-values is only **approximately** valid
-- Overall dataset is small (n=30) and unbalanced (20 vs. 10) — limits power throughout, especially for Alicante Bouschet-specific claims
-
-------------------------------------------------------------------------
-
-## Conclusion: the four questions {.smaller}
-
-Our analysis set out to answer four questions about these 30 wines:
-
-1.  **Can we find groups in the data?**
-2.  **Are they consistent with grape type?**
-3.  **Can we assume multivariate normality?**
-4.  **Are there surprising observations?**
-
-------------------------------------------------------------------------
-
 ## Can we find groups? {.smaller}
 
 ::::: columns
@@ -351,8 +335,8 @@ The new bit is vertical. Within the blue points, T23/T24/T25/T26 sit high on PC2
 if T22-T26 were just outliers, Cluster 1 wines would still look consistent with Cluster 2's distribution. They don't — p \< 0.0001 in both directions. That's what distinguishes a subgroup from a tail.
 
 M16 and M17 bottom left are the Mencía outliers from the descriptive section — the two with high anthocyanins and low tannins.
-:::
 
+:::
 ------------------------------------------------------------------------
 
 ## Are the groups consistent with graph type {.smaller}
@@ -373,65 +357,9 @@ this is why anthocyanin fingerprinting is used for authentication in the first p
 the point is that if grape type were the whole story, Alicante Bouschet would look like a single tight group. It doesn't.
 :::
 
-------------------------------------------------------------------------
+---
 
-## Can we assume multivariate normality? {.smaller .scrollable}
-
-:::::: columns
-::: {.column width="42%"}
-**Rejections at 5%** (13 of 46)
-
-|     | Variable         | p      |
-|-----|------------------|--------|
-| M   | Tot_Anthocyanins | 0.0000 |
-| M   | Tot_Anthocyans   | 0.0000 |
-| M   | DpGlCm           | 0.0001 |
-| M   | PtGlCm           | 0.0035 |
-| M   | Tot_Tannins      | 0.0135 |
-| AB  | DpGlCm           | 0.0159 |
-| AB  | PnGlCm           | 0.0216 |
-| M   | PnGlCm           | 0.0247 |
-| M   | MvGlAc           | 0.0262 |
-| M   | DpGl             | 0.0321 |
-| M   | MvGlCf           | 0.0337 |
-| AB  | PtGlAc           | 0.0427 |
-| M   | PnGl             | 0.0482 |
-
-*M = Mencía, AB = Alicante Bouschet*
-:::
-
-::: {.column width="6%"}
-:::
-
-::: {.column width="52%"}
-**No — not on the raw variables.**
-
-- **13 of 46** within-cultivar tests reject, against \~2 expected by chance
-- **10 of 13** are Mencía
-- Coumaroylated derivatives (DpGlCm, PnGlCm) reject in **both** cultivars
-- PCA improves matters but **PC2 still rejects** in both
-
-> Mahalanobis p-values that follow are approximately, not exactly, valid
-:::
-::::::
-
-::: notes
-This is the Shapiro-Wilk test — null hypothesis is that the data are normally distributed, so a small p-value means we reject normality. Chose it because n is small; it has better power than Kolmogorov-Smirnov at this sample size.
-
-We tested each variable separately, within each cultivar. 23 variables × 2 cultivars = 46 tests.
-
-The table shows all 13 rejections
-
-10 of the 13 being Mencía sounds like Mencía is worse behaved, but Alicante Bouschet only has n=10 against Mencía's n=20, so we may just be less able to detect problems there.
-
-What we did about it: rather than transform variables or abandon the normality-based approach, we moved to principal components. PCA gave us two things at once — it handled the redundancy, and the components are linear combinations of 23 variables, so the central limit theorem pushes them toward normality even when the inputs aren't normal. That's why PC1, PC3, PC4 all pass.
-
-It didn't fully work — PC2 still rejects in both cultivars — so we proceeded with Mahalanobis distances knowing the chi-square reference distribution is approximate. We flag this in Limitations rather than pretending it away.
-:::
-
-------------------------------------------------------------------------
-
-## 4a. Surprising observations: individual wines {.smaller}
+## Surprising observations: individual wines {.smaller}
 
 :::: {.columns}
 
@@ -493,7 +421,7 @@ the distance measure summarises all of it in one number.
 
 ---
 
-## 4b. A whole subgroup {.smaller}
+##  A whole subgroup {.smaller}
 
 :::: {.columns}
 
@@ -552,6 +480,65 @@ it in Cluster 2; PC2 alone wouldn't. Be upfront if asked.
 
 Don't oversell — we found this visually then tested it, which is partly circular. Save
 for Limitations unless someone raises it.
+
+Wian finish 
+:::
+
+------------------------------------------------------------------------
+
+## Why might this be happening? {.smaller}
+
+- Alicante Bouschet already showed 2–3× the variability of Mencía on concentration variables (descriptive stage)
+- Revilla et al. attributed this to variable maceration length — the cultivar is often managed to different blending targets
+- **Our finding refines this**: rather than one heterogeneous group with a long tail, the data are more consistent with **two discrete phenolic profiles**
+
+> Plausible explanation: different maceration regimes or blending targets across batches — but we have no winemaking records to confirm this directly
+
+------------------------------------------------------------------------
+
+## Limitations {.smaller}
+
+- Subgroup analysis rests on **5 wines per cluster**, tested against covariance estimated from those same 5 observations (3 PCs) — small enough to be suggestive, not confirmatory
+- PC2's non-normality means the chi-square reference distribution underlying all Mahalanobis p-values is only **approximately** valid
+- Overall dataset is small (n=30) and unbalanced (20 vs. 10) — limits power throughout, especially for Alicante Bouschet-specific claims
+
+:::notes 
+Oliver finish 
+:::
+------------------------------------------------------------------------
+
+## Conclusion: the four questions {.smaller}
+
+Our analysis set out to answer four questions about these 30 wines:
+
+1.  **Can we find groups in the data?**
+2.  **Are they consistent with grape type?**
+3.  **Can we assume multivariate normality?**
+4.  **Are there surprising observations?**
+
+:::notes 
+One: yes, and more than we expected. The cultivar split came through cleanly on PC1,
+and a second split appeared within Alicante Bouschet that Revilla et al. didn't
+report.
+
+Two: partly. The primary split is grape type — every wine rejects the opposing
+cultivar's distribution. But the secondary split cuts within a cultivar, so grape
+type alone doesn't explain all the structure.
+
+Three: no, not on the raw variables — thirteen of forty-six within-cultivar tests
+reject. PCA improved things but PC2 still rejects, so our Mahalanobis p-values are
+approximate rather than exact.
+
+Four: yes, at two levels. M7 and M8 individually, extreme on components a scatterplot
+doesn't show. And T22 to T26 collectively, which turned out to be a subgroup rather
+than a set of outliers.
+
+Close on the honest framing: small sample, unbalanced, and we identified the clusters
+visually before testing them. Hypothesis-generating, not confirmed. Worth testing in
+a larger sample with maceration records.
+
+Wian finish 
+
 :::
 
 ---
