@@ -74,7 +74,6 @@ editor:
 ------------------------------------------------------------------------
 
 ## Redundancy among the 23 variables {.smaller}
-
 ```{r}
 #| echo: false
 #| eval: true
@@ -90,27 +89,36 @@ wine <- read_csv("extracted data.csv") |>
     Cultivar = factor(if_else(str_starts(Sample, "M"), "Mencia", "Alicante Bouschet")),
     .after = Sample
   )
+```
 
+::::{.columns}
+::: {.column width="58%"}
+```{r}
+#| echo: false
+#| fig-width: 6.5
+#| fig-height: 5.5
 wine |>
   select(-Sample, -Cultivar) |>
   cor() |>
   ggcorrplot(
     type = "lower",
     method = "circle",
-    lab = TRUE,
+    lab = FALSE,
     lab_size = 2,
     hc.order = TRUE,
     colors = c("blue", "white", "red"),
     legend.title = "Corr"
   )
 ```
-
+:::
+:::{.column width="42%"}
 - **51 of 253 possible pairs (20.2%) correlate at \|r\| \> 0.8** — substantial redundancy
 - Near-duplicate measurements: `Tot_Anthocyanins` vs `Tot_Anthocyans`, r = 0.998
 - Compositional constraint: monoglucoside proportions sum to \~100%, so they're mechanically correlated (e.g. `MvGl`/`PnGl`, \|r\| ≈ 0.95–0.97)
 
 > This redundancy motivates dimensionality reduction via PCA
-
+:::
+::::
 ## Is multivariate normality reasonable? {.smaller}
 
 Shapiro-Wilk tested **per variable, per cultivar** (pooling would conflate the cultivar mean gap with real non-normality)
