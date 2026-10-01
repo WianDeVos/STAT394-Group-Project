@@ -70,6 +70,17 @@ Riley finish
   - 4 anthocyanin/tannin concentration variables (mg/L)
   - 14 relative-proportion anthocyanins (5 monoglucosides, 9 acylated derivatives)
 
+::: notes
+We're working with 30 wines: 20 Mencía and 10 Alicante Bouschet, all 2014 vintage. We combined 23 numeric variables from the Revilla paper: colour measures, concentrations, and anthocyanin proportions. Revilla analysed these in separate blocks, whereas we analyse them together.
+
+
+Spectrophotometric = measures how much a chemical substance absorbs or transmits light by passing a beam of light through a sample solution.
+
+Monoglucosides are chemical compounds where a single glucose sugar molecule links to another non-sugar organic molecule (called an aglycone), such as a plant pigment, flavor compound
+
+Anthocyanincs are plant pigments in grapes
+:::
+
 ------------------------------------------------------------------------
 
 ## A descriptive analysis {.smaller}
@@ -117,6 +128,10 @@ wine |>
 - \~2–3× the anthocyanin/tannin concentrations, but with 2–3× the variability of Mencía
 :::
 ::::
+
+::: notes
+When we compare the two grape types, Alicante Bouschet stands out. Its wines are about twice as dark and colourful as Mencía, and they have about twice as much of the compounds that give red wine its colour and bitter, dry taste. That fits the grape, which is unusual because its flesh is red as well as its skin, so more colour ends up in the wine. The pigment and tannin levels are also two to three times higher. The wines also vary two to three times more from one to the next, and that will matter later.
+:::
 ------------------------------------------------------------------------
 
 ## Redundancy among the 23 variables {.smaller}
@@ -168,6 +183,7 @@ wine |>
 :::
 
 ::: notes 
+Next we checked correlations. About 20% of variable pairs correlate above 0.8, some from plain duplication, like total anthocyanins and total anthocyans at 0.998, and some because the monoglucoside proportions sum to roughly 100%. So these aren't 23 independent variables, which pointed us towards PCA.
 
 Oliver finish 
 :::
@@ -270,20 +286,10 @@ Two independent problems point to the same fix:
 **Approach**: retain PCs with eigenvalue > 1 (Kaiser criterion) — the first 5 retain **90.9%** of total variance, giving an invertible space for Mahalanobis distances and normality checks
 
 ::: {.notes}
-Eigenvalue > 1 means a component accounts for more variance than a single original
-variable would on its own — that's the Kaiser criterion, and the dashed line is where
-it sits.
 
-Be honest about the cutoff: PC1 is dominant, PC2 and PC3 are clearly above the line,
-but PC4 and PC5 are only just above it. There's no dramatic elbow here — we followed
-the rule rather than reading an obvious break. If someone pushes, the answer is that
-dropping to three PCs would still leave us able to invert the covariance matrix, but
-we'd lose about 11% of the variance and PC4 turns out to matter for M7.
 
-Both problems on this slide are really the same problem in different clothes —
-23 variables is too many for 30 observations, and they're not independent anyway.
-
-Next slide checks whether the components are better behaved than the raw variables.
+PCA solves two problems. First, Mahalanobis distance needs an invertible covariance matrix, but with 23 variables and only 10 or 20 wines per cultivar (ranks of 19 and 9 which is less than number of variables), it's singular .
+Second, there's the redundancy. Using the Kaiser criterion set to above 1 eigenvalue, we kept five components covering 90.9% of the variance. PC4 and PC5 only just clear the line, so we followed the rule rather than a clear elbow.
 
 Oliver finish 
 :::
@@ -332,6 +338,12 @@ pander::pander(shapDF)  # PC1–5 Shapiro-Wilk, aggregate + by cultivar
 - Within cultivar: PC1 and PC5 are fine, **but PC2 rejects in both** cultivars (Mencía p = 0.0161, Alicante Bouschet p = 0.0095)
 
 > Reducing dimensionality helped, but did **not** fully resolve non-normality — Mahalanobis-based p-values later on should be read as approximately, not exactly, valid
+
+::: notes
+Mahalanobis p-values assume normality, and we saw the raw variables failed that.  
+So we tested the components. Pooled, PC1 and PC5 reject, which is expected when mixing two cultivars. However, within each cultivar they're normal, coversely PC2 rejects in both. 
+So PCA helped but didn't fully fix our normality problem, and our Mahalanobis p-values are approximate, not exact.
+:::
 
 ------------------------------------------------------------------------
 
@@ -536,6 +548,9 @@ Wian finish
 
 > Plausible explanation: different maceration regimes or blending targets across batches — but we have no winemaking records to confirm this directly
 
+:::notes
+Alicante Bouschet was already more variable, and Revilla attributed that to varying maceration length. Our data suggest not one spread-out group but two distinct phenolic profiles. Different maceration or blending across batches is plausible, but we have no winemaking records, this is just a hypothesis.
+:::
 ------------------------------------------------------------------------
 
 ## Limitations {.smaller}
@@ -545,6 +560,7 @@ Wian finish
 - Overall dataset is small (n=30) and unbalanced (20 vs. 10) — limits power throughout, especially for Alicante Bouschet-specific claims
 
 :::notes 
+The subgroup rests on five wines per cluster, and we spotted it visually before testing, so it's partly circular. PC2's non-normality makes the p-values approximate. And the dataset is small and unbalanced across cultivar, which limits power. So this is hypothesis-generating, and the next step is a larger sample with maceration records.
 Oliver finish 
 :::
 ------------------------------------------------------------------------
