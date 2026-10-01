@@ -10,7 +10,7 @@ format:
     theme: serif
     slide-number: true
     transition: slide
-    width: 1050
+    width: 1150
     height: 700
     toc: false
     css: |
@@ -82,7 +82,7 @@ Anthocyanincs are plant pigments in grapes
 
 ------------------------------------------------------------------------
 
-## A descriptive analysis {.smaller}
+## A descriptive analysis {.smaller .scrollable}
 
 ::::{.columns}
 ::: {.column width="60%"}
@@ -111,7 +111,7 @@ wine |>
   select(Cultivar, Tot_Phen_Ind, Col_Int_420_520, Col_Int_420_520_620, Hue, Chem_Age_Ind) |>
   pivot_longer(-Cultivar, names_to = "Variable", values_to = "value") |>
   summarise(
-    Mean = mean(value), SD = sd(value), Min = min(value), Max = max(value),
+    Mean = mean(value), SD = sd(value), # Min = min(value), Max = max(value),
     .by = c(Cultivar, Variable)
   ) |>
   arrange(Variable, Cultivar) |>
@@ -555,21 +555,7 @@ Oliver finish
 :::
 ------------------------------------------------------------------------
 
-## Conclusion: the four questions {.smaller}
 
-Our analysis set out to answer four questions about these 30 wines:
-
-1.  **Can we find groups in the data?**
-2.  **Are they consistent with grape type?**
-3.  **Can we assume multivariate normality?**
-4.  **Are there surprising observations?**
-
-:::notes 
-
-Riley finish 
-
-:::
-
----
 
 ## References {.smaller}
+
