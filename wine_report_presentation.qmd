@@ -67,7 +67,7 @@ Riley finish
 - 23 numeric variables combined from Revilla et al.'s Tables 1, 2, 5, 6:
   - 5 spectrophotometric/colour variables
   - 4 anthocyanin/tannin concentration variables (mg/L)
-  - 14 relative-proportion anthocyanins (5 monoglucosides, 9 acetylated derivatives)
+  - 14 relative-proportion anthocyanins (5 monoglucosides, 9 acylated derivatives)
 
 ::: notes
 We're working with 30 wines: 20 Mencía and 10 Alicante Bouschet, all 2014 vintage. We combined 23 numeric variables from the Revilla paper: colour measures, concentrations, and anthocyanin proportions. Revilla analysed these in separate blocks, whereas we analyse them together.
@@ -224,7 +224,7 @@ Oliver finish
 
 - **13 of 46** within-cultivar tests reject, against \~2 expected by chance
 - **10 of 13** are Mencia
-- Coumarylated derivatives (DpGlCm, PnGlCm) reject in **both** cultivars
+- Coumaroylated derivatives (DpGlCm, PnGlCm) reject in **both** cultivars
 - PCA improves matters but **PC2 still rejects** in both
 
 > Mahalanobis p-values that follow are approximately, not exactly, valid
