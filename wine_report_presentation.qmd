@@ -70,11 +70,53 @@ Riley finish
   - 4 anthocyanin/tannin concentration variables (mg/L)
   - 14 relative-proportion anthocyanins (5 monoglucosides, 9 acylated derivatives)
 
+------------------------------------------------------------------------
+
+## A descriptive analysis {.smaller}
+
+::::{.columns}
+::: {.column width="60%"}
+```{r}
+library(dplyr)
+library(tidyr)
+#| label: tbl-summary-colour
+#| tbl-cap: "Mean, standard deviation, and range of the spectrophotometric and colour variables by grape cultivar."
+
+#| echo: false
+#| eval: true
+#| tbl-width: 7
+#| tbl-height: 7
+
+library(tidyverse)
+library(ggcorrplot)
+
+wine <- read_csv("extracted data.csv") |>
+  select(-`...1`) |>
+  mutate(
+    Cultivar = factor(if_else(str_starts(Sample, "M"), "Mencia", "Alicante Bouschet")),
+    .after = Sample
+  )
+
+wine |>
+  select(Cultivar, Tot_Phen_Ind, Col_Int_420_520, Col_Int_420_520_620, Hue, Chem_Age_Ind) |>
+  pivot_longer(-Cultivar, names_to = "Variable", values_to = "value") |>
+  summarise(
+    Mean = mean(value), SD = sd(value), Min = min(value), Max = max(value),
+    .by = c(Cultivar, Variable)
+  ) |>
+  arrange(Variable, Cultivar) |>
+  mutate(across(where(is.numeric), \(x) round(x, 2))) |>
+  knitr::kable()
+```
+:::
+:::{.column width="40%"}
+
 **Key descriptive pattern**: Alicante Bouschet consistently shows
 
 - \~2× the colour intensity and total phenol index (teinturier character — pigmented flesh, not just skin)
 - \~2–3× the anthocyanin/tannin concentrations, but with 2–3× the variability of Mencía
-
+:::
+::::
 ------------------------------------------------------------------------
 
 ## Redundancy among the 23 variables {.smaller}
