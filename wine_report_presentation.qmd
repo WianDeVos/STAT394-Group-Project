@@ -5,7 +5,6 @@ author:
   - "Riley Phillips"
   - "Wian de Vos"
   - "Oliver Temel"
-  - "Simon Nelson"
 format:
   revealjs:
     theme: serif
@@ -64,11 +63,11 @@ Riley finish
 
 ## The data {.smaller}
 
-- 30 wines: 20 Mencía, 10 Alicante Bouschet (2014 vintage, post-malolactic fermentation)
+- 30 wines: 20 Mencia, 10 Alicante Bouschet (2014 vintage, post-malolactic fermentation)
 - 23 numeric variables combined from Revilla et al.'s Tables 1, 2, 5, 6:
   - 5 spectrophotometric/colour variables
   - 4 anthocyanin/tannin concentration variables (mg/L)
-  - 14 relative-proportion anthocyanins (5 monoglucosides, 9 acylated derivatives)
+  - 14 relative-proportion anthocyanins (5 monoglucosides, 9 acetylated derivatives)
 
 ::: notes
 We're working with 30 wines: 20 Mencía and 10 Alicante Bouschet, all 2014 vintage. We combined 23 numeric variables from the Revilla paper: colour measures, concentrations, and anthocyanin proportions. Revilla analysed these in separate blocks, whereas we analyse them together.
@@ -214,7 +213,7 @@ Oliver finish
 | AB  | PtGlAc           | 0.0427 |
 | M   | PnGl             | 0.0482 |
 
-*M = Mencía, AB = Alicante Bouschet*
+*M = Mencia, AB = Alicante Bouschet*
 :::
 
 ::: {.column width="6%"}
@@ -224,8 +223,8 @@ Oliver finish
 **No — not on the raw variables.**
 
 - **13 of 46** within-cultivar tests reject, against \~2 expected by chance
-- **10 of 13** are Mencía
-- Coumaroylated derivatives (DpGlCm, PnGlCm) reject in **both** cultivars
+- **10 of 13** are Mencia
+- Coumarylated derivatives (DpGlCm, PnGlCm) reject in **both** cultivars
 - PCA improves matters but **PC2 still rejects** in both
 
 > Mahalanobis p-values that follow are approximately, not exactly, valid
@@ -330,7 +329,7 @@ pander::pander(shapDF)  # PC1–5 Shapiro-Wilk, aggregate + by cultivar
 ```
 
 - Pooled: **PC1** (p = 0.0001) and **PC5** (p = 0.01) reject normality
-- Within cultivar: PC1 and PC5 are fine, **but PC2 rejects in both** cultivars (Mencía p = 0.0161, Alicante Bouschet p = 0.0095)
+- Within cultivar: PC1 and PC5 are fine, **but PC2 rejects in both** cultivars (Mencia p = 0.0161, Alicante Bouschet p = 0.0095)
 
 > Reducing dimensionality helped, but did **not** fully resolve non-normality — Mahalanobis-based p-values later on should be read as approximately, not exactly, valid
 
@@ -374,7 +373,7 @@ as_tibble(winePCA$x[, 1:2]) |>
 ::: {.column width="45%"}
 **Yes — and more than we expected.**
 
-- Mencía / Alicante Bouschet split recovered cleanly on PC1
+- Mencia / Alicante Bouschet split recovered cleanly on PC1
 - A **second split** appears within Alicante Bouschet along PC2
 :::
 :::::
@@ -395,7 +394,7 @@ The new bit is vertical. Within the blue points, T23/T24/T25/T26 sit high on PC2
 - Practically: a wine's phenolic profile alone would be enough to identify its cultivar
 - But the **secondary** split cuts *within* Alicante Bouschet — grape type alone doesn't account for all the structure in the data
 
-> Something other than cultivar is orginising these wines
+> Something other than cultivar is organising these wines
 
 ::: notes
 (read first bullet point) - this is exactly what Revilla et al got, using all 23 variables jointly rather than block by block. The one exception at p = 0.0057 is T25, which is still well below any threshold
@@ -415,7 +414,7 @@ the point is that if grape type were the whole story, Alicante Bouschet would lo
 ```{r}
 #| echo: false
 #| label: fig-mencia-pc45
-#| fig-cap: "Mencía wines on the fourth and fifth principal components, with M7 and M8 highlighted."
+#| fig-cap: "Mencia wines on the fourth and fifth principal components, with M7 and M8 highlighted."
 #| fig-width: 6
 #| fig-height: 5
 
@@ -438,7 +437,7 @@ as_tibble(winePCA$x[wine$Cultivar == "Mencia", 4:5]) |>
 :::
 
 ::: {.column width="42%"}
-**Two Mencía wines flagged: M7, M8**
+**Two Mencia wines flagged: M7, M8**
 
 - Neither stands out on PC1–PC2 — the view we've been using
 - M7 sits at **+3.18 on PC4**, M8 at **−3.52 on PC5**
@@ -533,7 +532,7 @@ Wian finish
 
 ## Why might this be happening? {.smaller}
 
-- Alicante Bouschet already showed 2–3× the variability of Mencía on concentration variables (descriptive stage)
+- Alicante Bouschet already showed 2–3× the variability of Mencia on concentration variables (descriptive stage)
 - Revilla et al. attributed this to variable maceration length — the cultivar is often managed to different blending targets
 - **Our finding refines this**: rather than one heterogeneous group with a long tail, the data are more consistent with **two discrete phenolic profiles**
 
