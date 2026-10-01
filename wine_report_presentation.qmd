@@ -441,7 +441,7 @@ as_tibble(winePCA$x[wine$Cultivar == "Mencia", 4:5]) |>
 
 - Neither stands out on PC1–PC2 — the view we've been using
 - M7 sits at **+3.18 on PC4**, M8 at **−3.52 on PC5**
-- M8 is the strongest outlier on the pooled analysis (p = 0.0096)
+- M7 at p = 0.0002, M8 at p < 0.0001 (exclusion test)
 
 A two-dimensional plot shows two of the five directions we retained — Mahalanobis distance uses all of them
 :::
@@ -456,7 +456,8 @@ That's exactly why we didn't judge by eye. PC4 and PC5 have standard deviations 
 about 1.2 and 1.0, so +3.18 and -3.52 are roughly 2.6 and 3.4 SDs out — clearly
 extreme, just in directions the default view doesn't show.
 
-M16 and M17 were the two visibly separated wines on the earlier PC1–PC2 plot — M17 also registers as mildly surprising; M7 and M8 are invisible there and only surface on PC4 and PC5
+Six Mencía wines are flagged under exclusion in total — M8 and M17 strongest, then M7,
+M6, M19, M16. We're showing the two that the PC1–PC2 plot couldn't flag
 
 The general point: Mahalanobis distance is doing work here that visual inspection can't. It measures distance from the centre of the distribution, scaled by how spread out the data are in each direction — so a point can look ordinary on the dominant components and still be extreme once all five are accounted for
 
