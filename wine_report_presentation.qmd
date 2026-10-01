@@ -131,6 +131,9 @@ wine |>
 
 ::: notes
 When we compare the two grape types, Alicante Bouschet stands out. Its wines are about twice as dark and colourful as Mencía, and they have about twice as much of the compounds that give red wine its colour and bitter, dry taste. That fits the grape, which is unusual because its flesh is red as well as its skin, so more colour ends up in the wine. The pigment and tannin levels are also two to three times higher. The wines also vary two to three times more from one to the next, and that will matter later.
+
+Col_int_420_520 = colour intensity at specific wave lengths
+tot_phen_ind = total phenol index
 :::
 ------------------------------------------------------------------------
 
@@ -284,8 +287,6 @@ Two independent problems point to the same fix:
 ::: {.notes}
 PCA solves two problems. First, Mahalanobis distance needs an invertible covariance matrix, but with 23 variables and only 10 or 20 wines per cultivar (ranks of 19 and 9 which is less than number of variables), it's singular .
 Second, there's the redundancy. Using the Kaiser criterion set to above 1 eigenvalue, we kept five components covering 90.9% of the variance. PC4 and PC5 only just clear the line, so we followed the rule rather than a clear elbow.
-
-Oliver finish 
 :::
 
 ------------------------------------------------------------------------
@@ -394,7 +395,7 @@ The new bit is vertical. Within the blue points, T23/T24/T25/T26 sit high on PC2
 - Practically: a wine's phenolic profile alone would be enough to identify its cultivar
 - But the **secondary** split cuts *within* Alicante Bouschet — grape type alone doesn't account for all the structure in the data
 
-> Something other than cultiar is orginising these wines
+> Something other than cultivar is orginising these wines
 
 ::: notes
 (read first bullet point) - this is exactly what Revilla et al got, using all 23 variables jointly rather than block by block. The one exception at p = 0.0057 is T25, which is still well below any threshold
